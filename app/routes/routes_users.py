@@ -8,7 +8,7 @@ bp = Blueprint('users', __name__)
 user_schema = UserSchema()
 users_schema = UserSchema(many=True)
 
-@bp.route('', methods=["POST"])
+@bp.route('/user', methods=["POST"])
 def add_user():
     name = request.json['name']
     email = request.json['email']
@@ -23,15 +23,46 @@ def add_user():
 
     return user_schema.jsonify(user)
 
-@bp.route('', methods=["GET"])
+@bp.route('/users', methods=["GET"])
 def all_users():
     all_users = User.query.all()
     result = users_schema.dump(all_users)
     
     return jsonify(result)
 
-@bp.route("/<id>", methods=["GET"])
+@bp.route("/user/<id>", methods=["GET"])
 def get_user(id):
     user = User.query.get(id)
 
+    if user is None:
+        return jsonify({'message': 'User not found'}), 404
+
     return user_schema.jsonify(user)
+
+@bp.route("/user/<id>", methods=["PUT"])
+def update_user(id):
+    user = User.query.get(id)
+
+    if user is None:
+        return jsonify({'message': 'User not found'}), 404
+
+    data = request.json
+    user.name = data.get('name', user.name)
+    user.email = data.get('email', user.email)
+    user.password = data.get('password', user.password)
+
+    db.session.commit()
+
+    return user_schema.jsonify(user)
+
+@bp.route("/user/<id>", methods=["DELETE"])
+def delete_user(id):
+    user = User.query.get(id)
+
+    if user is None:
+        return jsonify({'message': 'User not found'}), 404
+
+    db.session.delete(user)
+    db.session.commit()
+
+    return jsonify({'message': 'User deleted'})

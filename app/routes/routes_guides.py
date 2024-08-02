@@ -34,3 +34,29 @@ def get_guide(id):
 
     return guide_schema.jsonify(guide)
 
+@bp.route("/guide/<id>", methods=["PUT"])
+def update_guide(id):
+    guide = Guide.query.get(id)
+
+    if guide is None:
+         return jsonify({'message': 'Guide not found'}), 404
+    
+    data = request.json
+    guide.title = data.get('title', guide.title)
+    guide.content = data.get('content', guide.content)
+
+    db.session.commit()
+
+    return guide_schema.jsonify(guide)
+
+@bp.route("/guide/<id>", methods=["DELETE"])
+def delete_guide(id):
+    guide = Guide.query.get(id)
+
+    if guide is None:
+        return jsonify({'message': 'Guide not found'}), 404
+    
+    db.session.delete(guide)
+    db.session.commit()
+
+    return jsonify({'message': 'Guide deleted'})
