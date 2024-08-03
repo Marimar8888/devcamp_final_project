@@ -49,6 +49,9 @@ def all_courses():
 def get_course(id):
     course = Course.query.get(id)
 
+    if course is None:
+        return jsonify({'message': 'Course not found'}), 404
+
     return course_schema.jsonify(course)
 
 @bp.route("/course/<id>", methods=["PUT"])

@@ -10,18 +10,32 @@ users_schema = UserSchema(many=True)
 
 @bp.route('/user', methods=["POST"])
 def add_user():
-    name = request.json['name']
-    email = request.json['email']
-    password = request.json['password']
+    data = request.json
 
-    new_user = User(name, email, password)
+    required_fields = ['users_name', 'users_email', 'users_password']
+    for field in required_fields:
+        if field not in data:
+            return jsonify({'error': f'Campo {field} es obligatorio'}), 400
 
-    db.session.add(new_user)
-    db.session.commit()
+    users_name = data['users_name']
+    users_email = data['users_email']
+    users_password = data['users_password']
 
-    user = User.query.get(new_user.id)
+    existing_user = User.query.filter_by(users_email=users_email).first()
+    if existing_user:
+        return jsonify({'error': 'El email ya está en uso'}), 400
 
-    return user_schema.jsonify(user)
+    new_user = User(users_name=users_name, users_email=users_email, users_password=users_password)
+    
+    try:
+        db.session.add(new_user)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'No se pudo agregar el usuario', 'details': str(e)}), 500
+
+    user = User.query.get(new_user.users_id)
+    return user_schema.jsonify(user), 201
 
 @bp.route('/users', methods=["GET"])
 def all_users():
@@ -47,9 +61,9 @@ def update_user(id):
         return jsonify({'message': 'User not found'}), 404
 
     data = request.json
-    user.name = data.get('name', user.name)
-    user.email = data.get('email', user.email)
-    user.password = data.get('password', user.password)
+    user.users_name = data.get('users_name', user.users_name)
+    user.users_email = data.get('users_email', user.users_email)
+    user.users_password = data.get('users_password', user.users_password)
 
     db.session.commit()
 
