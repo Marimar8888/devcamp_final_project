@@ -2,6 +2,7 @@ from app import db, ma
 from sqlalchemy import Numeric
 
 class Course(db.Model):
+    __tablename__ = 'courses'
     courses_id = db.Column(db.Integer, primary_key=True)
     courses_title = db.Column(db.String(144), unique=False)
     courses_content = db.Column(db.String(500), unique=False, nullable=True)
