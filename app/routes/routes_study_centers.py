@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
-from app.models import StudyCenter, StudyCenterSchema
+from app.models import StudyCenter
+from app.schema.studycenter_schema import StudyCenterSchema
 from app import db
 
 # Definir el blueprint para las rutas de User
@@ -9,7 +10,7 @@ studyCenter_schema = StudyCenterSchema()
 studyCenters_schema = StudyCenterSchema(many=True)
 
 @bp.route('/studycenter', methods=["POST"])
-def add_user():
+def add_studycenter():
     data = request.json
 
     required_fields = ['studyCenters_name', 'studyCenters_email']

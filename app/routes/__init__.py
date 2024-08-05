@@ -9,6 +9,7 @@ from .routes_users import bp as users_bp
 from .routes_courses import bp as courses_bp
 from .routes_study_centers import bp as studyCenters_bp
 from .routes_professors import bp as professors_bp
+
 # Registrar los blueprints sin prefijo de URL
 
 bp.register_blueprint(users_bp) 

@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
-from app.models import Professor, ProfessorSchema
+from app.models import Professor
+from app.schema.professor_schema import ProfessorSchema
 from app import db
 
 # Definir el blueprint para las rutas de Professor

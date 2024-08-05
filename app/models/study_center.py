@@ -1,4 +1,4 @@
-from app import db, ma
+from app import db
 
 class StudyCenter(db.Model):
     __tablename__ = 'studycenters'
@@ -10,8 +10,3 @@ class StudyCenter(db.Model):
         self.studyCenters_name = studyCenters_name
         self. studyCenters_email =  studyCenters_email
 
-    
-class StudyCenterSchema(ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = StudyCenter
-        include_fk = True
