@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
-from app.models import User, UserSchema
+from app.models import User
+from app.schema.user_schema import UserSchema
 from app import db
 
 # Definir el blueprint para las rutas de User
@@ -10,6 +11,7 @@ users_schema = UserSchema(many=True)
 
 @bp.route('/user', methods=["POST"])
 def add_user():
+    
     data = request.json
 
     required_fields = ['users_name', 'users_email', 'users_password']

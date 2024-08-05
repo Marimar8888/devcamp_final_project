@@ -1,4 +1,4 @@
-from app import db, ma
+from app import db
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -12,6 +12,3 @@ class User(db.Model):
         self.users_email = users_email
         self.users_password = users_password
     
-class UserSchema(ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = User
