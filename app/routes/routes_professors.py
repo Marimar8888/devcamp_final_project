@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
-from app.models import Professor
+from app.models import Professor, ProfessorStudyCenter  
 from app.schema.professor_schema import ProfessorSchema
+
 from app import db
 
 # Definir el blueprint para las rutas de Professor
@@ -40,9 +41,29 @@ def add_professor():
 @bp.route('/professors', methods=["GET"])
 def all_professors():
     all_professors = Professor.query.all()
-    result = professors_schema.dump(all_professors)
-    
-    return jsonify(result)
+    response = []
+
+    for professor in all_professors:
+        courses = [course.courses_id for course in professor.courses]
+
+        studycenters = [
+            {
+                'professor_id': pcs.professor_id,
+                'studyCenter_id': pcs.studyCenter_id
+            } for pcs in ProfessorStudyCenter.query.filter_by(professor_id=professor.professors_id).all()
+        ]
+
+        professor_response = {
+            'professors_id': professor.professors_id,
+            'professors_name': professor.professors_name,
+            'professors_email': professor.professors_email,
+            'studycenters': studycenters,
+            'courses': courses
+        }
+        
+        response.append(professor_response)
+   
+    return jsonify(response)
 
 @bp.route("/professor/<id>", methods=["GET"])
 def get_professor(id):
@@ -50,6 +71,7 @@ def get_professor(id):
 
     if professor is None:
         return jsonify({'message': 'Professor not found'}), 404
+
 
     return professor_schema.jsonify(professor)
 

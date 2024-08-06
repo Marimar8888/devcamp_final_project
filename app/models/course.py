@@ -1,4 +1,4 @@
-from app import db, ma
+from app import db
 from sqlalchemy import Numeric
 
 class Course(db.Model):
@@ -9,14 +9,15 @@ class Course(db.Model):
     courses_image = db.Column(db.LargeBinary, unique=False, nullable=True)
     courses_price = db.Column(Numeric(10, 2), unique=False)
     courses_discounted_price = db.Column(Numeric(10, 2), unique=False, nullable=True)
+    courses_professor_id = db.Column(db.Integer, db.ForeignKey('professors.professors_id'))
+
+    professor = db.relationship('Professor', backref=db.backref('courses', lazy='dynamic'))
     
-    def __init__(self,  courses_title,  courses_content, courses_image, courses_price, courses_discounted_price):
+    def __init__(self,  courses_title,  courses_content, courses_image, courses_price, courses_discounted_price, courses_professor_id):
         self.courses_title = courses_title
         self.courses_content = courses_content
         self.courses_image = courses_image
         self.courses_price = courses_price
         self.courses_discounted_price = courses_discounted_price
+        self.courses_professor_id = courses_professor_id
 
-class CourseSchema(ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = Course

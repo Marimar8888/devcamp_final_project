@@ -5,3 +5,4 @@ class ProfessorSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Professor
         load_instance = True
+        include_relationships = True
