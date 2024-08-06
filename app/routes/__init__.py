@@ -11,6 +11,7 @@ from .routes_study_centers import bp as studyCenters_bp
 from .routes_professors import bp as professors_bp
 from .routes_professor_studycenter import bp as professor_studycenter_bp
 from .routes_rols import bp as rols_bp
+from .routes_user_rol import bp as user_rol_bp
 
 # Registrar los blueprints sin prefijo de URL
 
@@ -20,3 +21,4 @@ bp.register_blueprint(studyCenters_bp)
 bp.register_blueprint(professors_bp) 
 bp.register_blueprint(professor_studycenter_bp)
 bp.register_blueprint(rols_bp) 
+bp.register_blueprint(user_rol_bp) 

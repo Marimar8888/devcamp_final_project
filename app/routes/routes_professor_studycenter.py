@@ -53,9 +53,7 @@ def add_professor_studycenter():
 @bp.route('/professor_studycenters', methods=["GET"])
 def all_professor_studycenters():
     all_professor_studycenters = ProfessorStudyCenter.query.all()
-    print(f"Retrieved records: {all_professor_studycenters}")
     result = professor_studycenters_schema.dump(all_professor_studycenters)
-    print(f"Serialized result: {result}")  # Imprime el resultado serializado
     return jsonify(result)
 
 @bp.route('/professor_studycenter', methods=["DELETE"])
