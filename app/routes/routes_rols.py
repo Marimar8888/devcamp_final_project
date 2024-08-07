@@ -25,16 +25,15 @@ def add_rol():
         return jsonify({'error': 'El Rol ya existe'}), 400
 
     new_rol = Rol(rols_name=rols_name)
-
+    
     try:
         db.session.add(new_rol)
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': 'No se pudo agregar el rol nuevo', 'details': str(e)}), 500
-        
-    rol = Rol.query.get(new_rol.rols_id)
-    return rol_schema.jsonify(rol), 201
+        return jsonify({'error': 'No se pudo agregar el rol', 'details': str(e)}), 500
+
+    return jsonify(rol_schema.dump(new_rol)), 201
 
 @bp.route('/rols', methods=["GET"])
 def all_rols():
@@ -50,7 +49,7 @@ def get_rol(id):
     if rol is None:
         return jsonify({'message': 'Rol not found'}), 404
     
-    return rol_schema.jsonify(rol)
+    return rol_schema.dump(rol)
 
 @bp.route('/rol/<id>', methods= ["PUT"])
 def update_rol(id):
@@ -64,7 +63,7 @@ def update_rol(id):
 
     db.session.commit()
 
-    return rol_schema.jsonify(rol)
+    return rol_schema.dump(rol)
 
 @bp.route('/rol/<id>', methods=["DELETE"])
 def delete_rol(id):

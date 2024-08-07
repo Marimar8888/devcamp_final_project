@@ -1,7 +1,18 @@
-from app import ma
-from app.models.user import User
+from marshmallow import Schema, fields
 
-class UserSchema(ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = User
-        load_instance = True
+class RolSchema(Schema):
+    rols_id = fields.Int()
+    rols_name = fields.Str()
+
+class UserSchema(Schema):
+    users_id = fields.Int()
+    users_name = fields.Str()
+    users_email = fields.Str()
+    users_password = fields.Str()
+    rols = fields.List(fields.Nested(RolSchema))
+
+class LoginUserSchema(Schema):
+    users_id = fields.Int()
+    users_name = fields.Str()
+    users_email = fields.Str()
+    users_password = fields.Str()

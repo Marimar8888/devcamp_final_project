@@ -7,7 +7,7 @@ from .student import Student
 from .professor_studycenter import ProfessorStudyCenter
 from .user_rol import UserRol
 from .enrollment import Enrollment
-from app.schema.user_schema import UserSchema
+from app.schema.user_schema import UserSchema, LoginUserSchema  
 from app.schema.professor_schema import ProfessorSchema
 from app.schema.course_schema import CourseSchema
 from app.schema.studycenter_schema import StudyCenterSchema
@@ -27,6 +27,9 @@ def get_professor_studycenter_schema():
 
 def get_user_schema():
     return UserSchema()
+
+def get_login_user_schema():  
+    return LoginUserSchema()
 
 def get_rol_schema():
     return RolSchema()

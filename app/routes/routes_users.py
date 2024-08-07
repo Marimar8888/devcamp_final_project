@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from app.models import User
+from app.models import User, UserRol, Rol
 from app.schema.user_schema import UserSchema
 from app import db
 
@@ -52,8 +52,19 @@ def get_user(id):
 
     if user is None:
         return jsonify({'message': 'User not found'}), 404
+    
+    user_roles = UserRol.query.filter_by(user_id=id).all()
+    roles = [Rol.query.get(user_rol.rol_id) for user_rol in user_roles]
+    
+    user_schema_with_roles = {
+        'users_id': user.users_id,
+        'users_name': user.users_name,
+        'users_email': user.users_email,
+        'users_password': user.users_password,
+        'rols': [{'rols_id': role.rols_id, 'rols_name': role.rols_name} for role in roles]
+    }
 
-    return user_schema.jsonify(user)
+    return jsonify(user_schema_with_roles)
 
 @bp.route("/user/<id>", methods=["PUT"])
 def update_user(id):
