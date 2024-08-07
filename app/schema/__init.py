@@ -3,6 +3,7 @@ from .studycenter_schema import StudyCenterSchema
 from .user_schema import UserSchema
 from .rol_schema import RolSchema
 from .student_schema import StudentSchema
+from .enrollment_schema import EnrollmentSchema
 
-__all__ = ['ProfessorSchema', 'StudyCenterSchema',  'UserSchema', 'RolSchema', 'StudentSchema']
+__all__ = ['ProfessorSchema', 'StudyCenterSchema',  'UserSchema', 'RolSchema', 'StudentSchema', 'EnrollmentSchema']
 

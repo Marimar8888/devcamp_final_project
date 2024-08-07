@@ -6,6 +6,7 @@ from .study_center import StudyCenter
 from .student import Student
 from .professor_studycenter import ProfessorStudyCenter
 from .user_rol import UserRol
+from .enrollment import Enrollment
 from app.schema.user_schema import UserSchema
 from app.schema.professor_schema import ProfessorSchema
 from app.schema.course_schema import CourseSchema
@@ -33,8 +34,12 @@ def get_rol_schema():
 def get_user_rol_schema():
     return UserRolSchema()
 
+def get_enrollment_schema():
+    return EnrollmentSchema()
+
 
 __all__ = [
-    'User', 'Course', 'Professor', 'StudyCenter', 'ProfessorStudyCenter', 'Student', 'get_professor_schema', 'get_studycenter_schema', 'get_professor_studycenter_schema', 'get_user_schema', 'get_rol_schema', 'get_user_rol_schema'
+    'User', 'Course', 'Professor', 'StudyCenter', 'ProfessorStudyCenter', 'Student', 'Enrollment', 
+    'get_professor_schema', 'get_studycenter_schema', 'get_professor_studycenter_schema', 'get_user_schema', 'get_rol_schema', 'get_user_rol_schema', 'get_enrollment_schema'
 ]
 
