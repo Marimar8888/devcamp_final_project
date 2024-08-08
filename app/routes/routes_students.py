@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from app.models import Student
+from app.models import Student, Enrollment, Course
 from app.schema.student_schema import StudentSchema
 from app import db
 
@@ -54,7 +54,25 @@ def get_student(id):
     if student is None:
         return jsonify({'message': 'Student not found'}), 404
 
-    return student_schema.jsonify(student)
+    enrollments = Enrollment.query.filter_by(enrollments_student_id = id). all()
+    courses = [Course.query.get(enrollment.enrollments_course_id) for enrollment in enrollments]
+
+    student_schema_with_courses = {
+        'students_id': student.students_id,
+        'students_first_name': student.students_first_name,
+        'students_last_name': student.students_last_name,
+        'students_user_id': student.students_user_id,
+        'courses': [{'courses_id': course.courses_id,
+                     'courses_title': course.courses_title,
+                     'courses_content': course.courses_content,
+                     'courses_image': course.courses_image,
+                     'courses_price': course.courses_price,
+                     'courses_discounted_price': course.courses_discounted_price,
+                     'courses_professor_id': course.courses_professor_id}
+                    for course in courses]
+    }
+
+    return jsonify(student_schema_with_courses)
 
 @bp.route("/student/<id>", methods=["PUT"])
 def update_student(id):

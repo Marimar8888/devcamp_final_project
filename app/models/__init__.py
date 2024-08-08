@@ -14,6 +14,7 @@ from app.schema.studycenter_schema import StudyCenterSchema
 from app.schema.professor_studycenter_schema import ProfessorStudyCenterSchema 
 from app.schema.rol_schema import RolSchema
 from app.schema.user_rol_schema import UserRolSchema
+from app.schema.enrollment_schema import EnrollmentSchema
 
 
 def get_professor_schema():

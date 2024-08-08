@@ -5,4 +5,4 @@ class CourseSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Course
         include_relationships = True
-        exclude = ('courses',)
+        exclude = ('enrollments',)

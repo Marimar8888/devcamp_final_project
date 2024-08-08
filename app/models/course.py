@@ -1,5 +1,6 @@
 from app import db
-from sqlalchemy import Numeric
+from sqlalchemy import Column, Integer, String, Numeric, LargeBinary
+from sqlalchemy.orm import relationship
 
 class Course(db.Model):
     __tablename__ = 'courses'
@@ -12,12 +13,12 @@ class Course(db.Model):
     courses_professor_id = db.Column(db.Integer, db.ForeignKey('professors.professors_id'))
 
     professor = db.relationship('Professor', backref=db.backref('courses', lazy='dynamic'))
+    enrollments = db.relationship('Enrollment',  back_populates='course')  
     
-    def __init__(self,  courses_title,  courses_content, courses_image, courses_price, courses_discounted_price, courses_professor_id):
+    def __init__(self, courses_title, courses_content, courses_image, courses_price, courses_discounted_price, courses_professor_id):
         self.courses_title = courses_title
         self.courses_content = courses_content
         self.courses_image = courses_image
         self.courses_price = courses_price
         self.courses_discounted_price = courses_discounted_price
         self.courses_professor_id = courses_professor_id
-
