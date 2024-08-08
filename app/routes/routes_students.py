@@ -68,7 +68,8 @@ def get_student(id):
                      'courses_image': course.courses_image,
                      'courses_price': course.courses_price,
                      'courses_discounted_price': course.courses_discounted_price,
-                     'courses_professor_id': course.courses_professor_id}
+                     'courses_professor_id': course.courses_professor_id,
+                     'courses_studycenter_id': course.courses_studycenter_id}
                     for course in courses]
     }
 

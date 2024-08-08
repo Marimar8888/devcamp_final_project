@@ -16,7 +16,7 @@ def add_professor_studycenter():
     required_fields = ['professor_id', 'studyCenter_id']
     for field in required_fields:
         if field not in data:
-            return jsonify({'error': f'Campo {field} es obligatorio'}), 400
+            return jsonify({'error': f'Field {field} is required'}), 400
 
     professor_id = data['professor_id']
     studyCenter_id = data['studyCenter_id']
@@ -35,7 +35,7 @@ def add_professor_studycenter():
     existing_relationship = ProfessorStudyCenter.query.filter_by(
         professor_id=professor_id, studyCenter_id=studyCenter_id).first()
     if existing_relationship:
-        return jsonify({'error': 'La relación ya existe'}), 400
+        return jsonify({'error': 'The relationship already exists'}), 400
 
     # Crear una nueva relación
     new_relationship = ProfessorStudyCenter(
@@ -46,9 +46,9 @@ def add_professor_studycenter():
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': 'No se pudo agregar la relación', 'details': str(e)}), 500
+        return jsonify({'error': 'Relationship could not be added', 'details': str(e)}), 500
 
-    return jsonify({'message': 'Relación agregada exitosamente'}), 201
+    return jsonify({'message': 'Successfully Added Relationship'}), 201
 
 @bp.route('/professor_studycenters', methods=["GET"])
 def all_professor_studycenters():
@@ -64,7 +64,7 @@ def delete_professor_studycenter():
     
     for field in required_fields:
         if field not in data:
-            return jsonify({'error': f'Campo {field} es obligatorio'}), 400
+            return jsonify({'error': f'Field {field} is required'}), 400
     
     professor_id = data['professor_id']
     studyCenter_id = data['studyCenter_id']
@@ -72,13 +72,13 @@ def delete_professor_studycenter():
     relationship = ProfessorStudyCenter.query.filter_by(professor_id=professor_id, studyCenter_id=studyCenter_id).first()
 
     if not relationship:
-        return jsonify({'error': 'Relación no encontrada'}), 404
+        return jsonify({'error': 'Relationship not found'}), 404
 
     try:
         db.session.delete(relationship)
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': 'No se pudo eliminar la relación', 'details': str(e)}), 500
+        return jsonify({'error': 'Could not eliminate the relationship', 'details': str(e)}), 500
     
-    return jsonify({'message': 'Relación eliminada exitosamente'}), 200
+    return jsonify({'message': 'Relationship successfully eliminated'}), 200

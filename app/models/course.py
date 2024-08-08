@@ -11,14 +11,17 @@ class Course(db.Model):
     courses_price = db.Column(Numeric(10, 2), unique=False)
     courses_discounted_price = db.Column(Numeric(10, 2), unique=False, nullable=True)
     courses_professor_id = db.Column(db.Integer, db.ForeignKey('professors.professors_id'))
+    courses_studycenter_id = db.Column(db.Integer, db.ForeignKey('studycenters.studyCenters_id'))
 
     professor = db.relationship('Professor', backref=db.backref('courses', lazy='dynamic'))
     enrollments = db.relationship('Enrollment',  back_populates='course')  
+    studycenter = db.relationship('StudyCenter', backref=db.backref('courses', lazy='dynamic'))
     
-    def __init__(self, courses_title, courses_content, courses_image, courses_price, courses_discounted_price, courses_professor_id):
+    def __init__(self, courses_title, courses_content, courses_image, courses_price, courses_discounted_price, courses_professor_id, courses_studycenter_id):
         self.courses_title = courses_title
         self.courses_content = courses_content
         self.courses_image = courses_image
         self.courses_price = courses_price
         self.courses_discounted_price = courses_discounted_price
         self.courses_professor_id = courses_professor_id
+        self.courses_studycenter_id = courses_studycenter_id
