@@ -10,7 +10,8 @@ class Student(db.Model):
     students_user_id = db.Column(db.Integer, db.ForeignKey('users.users_id'), unique=True, nullable=False)
 
     enrollments = relationship('Enrollment', back_populates='student')
-   
+    professor_students = relationship('ProfessorStudent', back_populates='student') 
+       
     def __init__(self, students_first_name, students_last_name, students_user_id):
         self.students_first_name = students_first_name
         self.students_last_name = students_last_name

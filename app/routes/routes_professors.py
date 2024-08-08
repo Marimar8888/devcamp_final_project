@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
 from app.models import Professor, ProfessorStudyCenter  
 from app.schema.professor_schema import ProfessorSchema
+from app.models.professor_student import ProfessorStudent
+from app.models.student import Student
 
 from app import db
 
@@ -72,8 +74,22 @@ def get_professor(id):
     if professor is None:
         return jsonify({'message': 'Professor not found'}), 404
 
+    professor_students = ProfessorStudent.query.filter_by(professor_student_professor_id=id).all()
+    student_ids = [ps.professor_student_student_id for ps in professor_students]
+    students = Student.query.filter(Student.students_id.in_(student_ids)).all()
 
-    return professor_schema.jsonify(professor)
+    professor_data = {
+        'professors_id': professor.professors_id,
+        'professors_name': professor.professors_name,
+        'professors_email': professor.professors_email,
+        'students': [{
+            'students_id': student.students_id,
+            'students_first_name': student.students_first_name,
+            'students_last_name': student.students_last_name
+        } for student in students]
+    }
+
+    return jsonify(professor_data)
 
 @bp.route("/professor/<id>", methods=["PUT"])
 def update_professor(id):
