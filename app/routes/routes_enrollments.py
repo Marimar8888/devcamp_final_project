@@ -13,13 +13,15 @@ enrollments_schema = EnrollmentSchema(many=True)
 def add_enrollment():
     data = request.json
 
-    required_fields = ['enrollments_student_id', 'enrollments_course_id']
+    required_fields = ['enrollments_student_id', 'enrollments_course_id', 'enrollments_start_date', 'enrollments_end_date']
     for field in required_fields:
         if field not in data:
             return jsonify({'error': f'Campo {field} es obligatorio'}), 400
     
     enrollments_student_id = data['enrollments_student_id']
     enrollments_course_id = data['enrollments_course_id']
+    enrollments_start_date = data['enrollments_start_date']
+    enrollments_end_date = data['enrollments_end_date']
 
     student = Student.query.get(enrollments_student_id)
     course = Course.query.get(enrollments_course_id)
@@ -40,7 +42,9 @@ def add_enrollment():
     
     new_relationship = Enrollment(
          enrollments_student_id = enrollments_student_id, 
-         enrollments_course_id =  enrollments_course_id
+         enrollments_course_id =  enrollments_course_id,
+         enrollments_start_date = enrollments_start_date,
+         enrollments_end_date = enrollments_end_date
         )
 
     try:
@@ -77,7 +81,8 @@ def update_enrollment(id):
     data = request.json
     enrollment.enrollments_student_id = data.get('enrollments_student_id',  enrollment.enrollments_student_id)
     enrollment.enrollments_course_id = data.get('enrollments_course_id', enrollment.enrollments_course_id)
-
+    enrollment.enrollments_start_date = data.get('enrollments_start_date', enrollment.enrollments_start_date)
+    enrollment.enrollments_end_date = data.get('enrollments_end_date', enrollment.enrollments_end_date)
     db.session.commit()
 
     return enrollment_schema.jsonify(enrollment)
