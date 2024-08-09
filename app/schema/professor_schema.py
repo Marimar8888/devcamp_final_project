@@ -6,7 +6,8 @@ class ProfessorSchema(ma.SQLAlchemyAutoSchema):
         model = Professor
         load_instance = True
         include_relationships = True
-
+        exclude = ('professor_students', 'studycenters',)
+        
 
 class ProfessorBasicSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
