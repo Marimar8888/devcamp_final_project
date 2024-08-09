@@ -7,7 +7,7 @@ class User(db.Model):
     users_id = Column(Integer, primary_key=True)
     users_name = Column(String(100), nullable=False)
     users_email = Column(String(80), unique=True, nullable=False)
-    users_password = Column(String(16), nullable=False)
+    users_password = Column(String(64), nullable=False)
 
     user_roles = relationship('UserRol', back_populates='user')  
 
