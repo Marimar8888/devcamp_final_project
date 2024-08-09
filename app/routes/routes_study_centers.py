@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
 from app.models import StudyCenter
+from app.models.student import Student
 from app.schema.studycenter_schema import StudyCenterSchema
+from app.models.studycenter_student import StudyCenterStudent
 from app import db
 
 # Definir el blueprint para las rutas de User
@@ -50,8 +52,23 @@ def get_studycenter(id):
 
     if studyCenter is None:
         return jsonify({'message': 'StudyCenter not found'}), 404
+    
+    studyCenter_students = StudyCenterStudent.query.filter_by(studycenter_student_center_id=id).all()
+    student_ids = [ps.studycenter_student_student_id for ps in studyCenter_students]
+    students = Student.query.filter(Student.students_id.in_(student_ids)).all()
 
-    return studyCenter_schema.jsonify(studyCenter)
+    studyCenter_data = {
+        'studyCenters_id': studyCenter.studyCenters_id,  # Corregido aquí
+        'studyCenters_name': studyCenter.studyCenters_name,  # Corregido aquí
+        'studyCenters_email': studyCenter.studyCenters_email,  # Corregido aquí
+        'students': [{
+            'students_id': student.students_id,
+            'students_first_name': student.students_first_name,
+            'students_last_name': student.students_last_name
+        } for student in students]
+    }
+
+    return jsonify(studyCenter_data)
 
 @bp.route("/studycenter/<id>", methods=["PUT"])
 def update_studycenter(id):

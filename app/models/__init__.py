@@ -27,9 +27,6 @@ def get_professor_schema():
 def get_studycenter_schema():
     return StudyCenterSchema()
 
-def get_professor_studycenter_schema():
-    return ProfessorStudyCenterSchema()
-
 def get_user_schema():
     return UserSchema()
 
@@ -45,9 +42,6 @@ def get_user_rol_schema():
 def get_enrollment_schema():
     return EnrollmentSchema()
 
-def get_studycenter_student_schema():
-    return StudyCenterStudentSchema()
-
 def get_professor_studycenter_schema():
     return ProfessorStudentSchema()
 
@@ -55,6 +49,6 @@ def get_professor_studycenter_schema():
 __all__ = [
     'User', 'Course', 'Professor', 'StudyCenter', 'ProfessorStudyCenter', 'Student', 'Enrollment', 'StudyCenterStudent',
     'get_professor_schema', 'get_studycenter_schema', 'get_professor_studycenter_schema', 'get_user_schema', 'get_rol_schema', 
-    'get_user_rol_schema', 'get_enrollment_schema', 'get_studycenter_student_schema', 'get_professor_studycenter_schema'
+    'get_user_rol_schema', 'get_enrollment_schema', 'get_professor_studycenter_schema'
 ]
 

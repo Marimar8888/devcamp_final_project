@@ -11,6 +11,7 @@ class Student(db.Model):
 
     enrollments = relationship('Enrollment', back_populates='student')
     professor_students = relationship('ProfessorStudent', back_populates='student') 
+    studycenter_students = relationship('StudyCenterStudent', back_populates = 'student') 
        
     def __init__(self, students_first_name, students_last_name, students_user_id):
         self.students_first_name = students_first_name
