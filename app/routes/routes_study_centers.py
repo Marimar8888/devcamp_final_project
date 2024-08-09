@@ -1,10 +1,12 @@
 from flask import Blueprint, request, jsonify
+from app import db
 from app.models import StudyCenter
 from app.models.student import Student
-from app.schema.studycenter_schema import StudyCenterSchema, StudyCenterDetailSchema
+from app.models.course import Course
 from app.models.studycenter_student import StudyCenterStudent
-from app import db
 from app.schema.student_schema import StudentSchema
+from app.schema.course_schema import CourseSchema
+from app.schema.studycenter_schema import StudyCenterSchema, StudyCenterDetailSchema
 
 bp = Blueprint('studycenters', __name__)
 
@@ -13,6 +15,8 @@ studyCenters_schema = StudyCenterSchema(many=True)
 studyCenter_detail_schema = StudyCenterDetailSchema()
 student_schema = StudentSchema()
 students_schema = StudentSchema(many=True)
+course_schema = CourseSchema()
+courses_schema = CourseSchema(many=True)
 
 @bp.route('/studycenter', methods=["POST"])
 def add_studycenter():
@@ -61,10 +65,12 @@ def get_studycenter(id):
     studyCenter_students = StudyCenterStudent.query.filter_by(studycenter_student_center_id=id).all()
     student_ids = [ps.studycenter_student_student_id for ps in studyCenter_students]
     students = Student.query.filter(Student.students_id.in_(student_ids)).all()
-
     students_data = students_schema.dump(students)
-
     result['students'] = students_data
+
+    courses = Course.query.filter_by(courses_studycenter_id=id).all()
+    courses_data = courses_schema.dump(courses)
+    result['courses'] = courses_data
 
     return jsonify(result)
 
