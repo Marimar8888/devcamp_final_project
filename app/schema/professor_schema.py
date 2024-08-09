@@ -6,3 +6,10 @@ class ProfessorSchema(ma.SQLAlchemyAutoSchema):
         model = Professor
         load_instance = True
         include_relationships = True
+
+
+class ProfessorBasicSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Professor
+        load_instance = True
+        include_relationships = False

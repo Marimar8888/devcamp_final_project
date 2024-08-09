@@ -3,9 +3,11 @@ from app import db
 from app.models import StudyCenter
 from app.models.student import Student
 from app.models.course import Course
+from app.models.professor import Professor
 from app.models.studycenter_student import StudyCenterStudent
 from app.schema.student_schema import StudentSchema
 from app.schema.course_schema import CourseSchema
+from app.schema.professor_schema import ProfessorBasicSchema
 from app.schema.studycenter_schema import StudyCenterSchema, StudyCenterDetailSchema
 
 bp = Blueprint('studycenters', __name__)
@@ -17,6 +19,8 @@ student_schema = StudentSchema()
 students_schema = StudentSchema(many=True)
 course_schema = CourseSchema()
 courses_schema = CourseSchema(many=True)
+professor_schema = ProfessorBasicSchema()
+professors_schema = ProfessorBasicSchema(many=True)
 
 @bp.route('/studycenter', methods=["POST"])
 def add_studycenter():
@@ -69,8 +73,10 @@ def get_studycenter(id):
     result['students'] = students_data
 
     courses = Course.query.filter_by(courses_studycenter_id=id).all()
-    courses_data = courses_schema.dump(courses)
-    result['courses'] = courses_data
+    result['courses'] = courses_schema.dump(courses)
+
+    professors = Professor.query.join(Course).filter(Course.courses_studycenter_id == id).all()
+    result['professors'] = professors_schema.dump(professors)
 
     return jsonify(result)
 
