@@ -1,15 +1,18 @@
 from flask import Blueprint, request, jsonify
 from app.models import StudyCenter
 from app.models.student import Student
-from app.schema.studycenter_schema import StudyCenterSchema
+from app.schema.studycenter_schema import StudyCenterSchema, StudyCenterDetailSchema
 from app.models.studycenter_student import StudyCenterStudent
 from app import db
+from app.schema.student_schema import StudentSchema
 
-# Definir el blueprint para las rutas de User
 bp = Blueprint('studycenters', __name__)
 
 studyCenter_schema = StudyCenterSchema()
 studyCenters_schema = StudyCenterSchema(many=True)
+studyCenter_detail_schema = StudyCenterDetailSchema()
+student_schema = StudentSchema()
+students_schema = StudentSchema(many=True)
 
 @bp.route('/studycenter', methods=["POST"])
 def add_studycenter():
@@ -52,23 +55,19 @@ def get_studycenter(id):
 
     if studyCenter is None:
         return jsonify({'message': 'StudyCenter not found'}), 404
-    
+
+    result = studyCenter_detail_schema.dump(studyCenter)
+
     studyCenter_students = StudyCenterStudent.query.filter_by(studycenter_student_center_id=id).all()
     student_ids = [ps.studycenter_student_student_id for ps in studyCenter_students]
     students = Student.query.filter(Student.students_id.in_(student_ids)).all()
 
-    studyCenter_data = {
-        'studyCenters_id': studyCenter.studyCenters_id,  # Corregido aquí
-        'studyCenters_name': studyCenter.studyCenters_name,  # Corregido aquí
-        'studyCenters_email': studyCenter.studyCenters_email,  # Corregido aquí
-        'students': [{
-            'students_id': student.students_id,
-            'students_first_name': student.students_first_name,
-            'students_last_name': student.students_last_name
-        } for student in students]
-    }
+    students_data = students_schema.dump(students)
 
-    return jsonify(studyCenter_data)
+    result['students'] = students_data
+
+    return jsonify(result)
+
 
 @bp.route("/studycenter/<id>", methods=["PUT"])
 def update_studycenter(id):

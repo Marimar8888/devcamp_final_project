@@ -5,4 +5,15 @@ class StudyCenterSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = StudyCenter
         load_instance = True
+        include_relationships = False
+
+
+class StudyCenterDetailSchema(ma.SQLAlchemyAutoSchema):
+   
+    students = ma.Nested('StudentSchema', many=True)  # Asegúrate de definir o importar StudentSchema
+
+    class Meta:
+        model = StudyCenter
+        load_instance = True
         include_relationships = True
+        include_fk = True
