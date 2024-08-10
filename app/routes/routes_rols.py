@@ -3,6 +3,9 @@ from app.models.rol import Rol
 from app.schema.rol_schema import RolSchema
 from app import db
 
+from app.config import Config
+from app.utils.token_manager import decode_token, encode_token
+
 bp = Blueprint('rols', __name__)
 
 rol_schema = RolSchema()
@@ -10,6 +13,13 @@ rols_schema = RolSchema(many=True)
 
 @bp.route('/rol', methods=["POST"])
 def add_rol():
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
     data = request.json
 
     required_fields = ['rols_name']
@@ -37,6 +47,13 @@ def add_rol():
 
 @bp.route('/rols', methods=["GET"])
 def all_rols():
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
     all_rols = Rol.query.all()
     result = rols_schema.dump(all_rols)
 
@@ -44,6 +61,13 @@ def all_rols():
 
 @bp.route('/rol/<id>', methods = ["GET"])
 def get_rol(id):
+    
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
     rol = Rol.query.get(id)
 
     if rol is None:
@@ -53,6 +77,13 @@ def get_rol(id):
 
 @bp.route('/rol/<id>', methods= ["PUT"])
 def update_rol(id):
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+    
     rol = Rol.query.get(id)
 
     if rol is None:
@@ -67,6 +98,13 @@ def update_rol(id):
 
 @bp.route('/rol/<id>', methods=["DELETE"])
 def delete_rol(id):
+    
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+    
     rol = Rol.query.get(id)
 
     if rol is None:
