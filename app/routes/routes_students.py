@@ -3,6 +3,9 @@ from app.models import Student, Enrollment, Course
 from app.schema.student_schema import StudentSchema
 from app import db
 
+from app.config import Config
+from app.utils.token_manager import decode_token, encode_token
+
 # Definir el blueprint para las rutas de User
 bp = Blueprint('students', __name__)
 
@@ -11,6 +14,12 @@ students_schema = StudentSchema(many=True)
 
 @bp.route('/student', methods=["POST"])
 def add_student():
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
     
     data = request.json
 
@@ -37,11 +46,19 @@ def add_student():
         return jsonify({'error': 'No se pudo agregar el estudiante', 'details': str(e)}), 500
 
     student = Student.query.get(new_student.students_id)
-    return student_schema.jsonify(student), 201
+
+    return jsonify(student_schema.dump(student)), 201
 
     
 @bp.route('/students', methods=["GET"])
 def all_students():
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
     all_students = Student.query.all()
     result = students_schema.dump(all_students)
     
@@ -49,6 +66,13 @@ def all_students():
 
 @bp.route("/student/<id>", methods=["GET"])
 def get_student(id):
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
     student = Student.query.get(id)
 
     if student is None:
@@ -77,6 +101,13 @@ def get_student(id):
 
 @bp.route("/student/<id>", methods=["PUT"])
 def update_student(id):
+    
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
     student = Student.query.get(id)
 
     if student is None:
@@ -89,10 +120,17 @@ def update_student(id):
 
     db.session.commit()
 
-    return student_schema.jsonify(student)
+    return jsonify(student_schema.dump(student))
 
 @bp.route("/student/<id>", methods=["DELETE"])
 def delete_student(id):
+    
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
     student = Student.query.get(id)
 
     if student is None:
