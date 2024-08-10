@@ -102,6 +102,7 @@ def delete_course(id):
         decoded_token = decode_token(auth_header)
     except ValueError as e:
         return jsonify({'error': str(e)}), 401
+        
     course = Course.query.get(id)
 
     if course is None:

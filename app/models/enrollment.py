@@ -7,7 +7,7 @@ class Enrollment(db.Model):
     enrollments_student_id = db.Column(db.Integer, db.ForeignKey('students.students_id'))
     enrollments_course_id = db.Column(db.Integer, db.ForeignKey('courses.courses_id'))
     enrollments_start_date = db.Column(db.DateTime, nullable=False)
-    enrollments_end_date =  db.Column(db.DateTime, nullable=False)
+    enrollments_end_date =  db.Column(db.DateTime, nullable=True)
 
     student = db.relationship('Student', back_populates='enrollments')  
     course = db.relationship('Course', back_populates='enrollments')

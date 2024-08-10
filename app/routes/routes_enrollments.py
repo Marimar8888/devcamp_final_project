@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
 from app.models import Student, Course, Enrollment
 from app.schema.enrollment_schema import EnrollmentSchema
+from app.config import Config
+from app.utils.token_manager import decode_token, encode_token
 
 from app import db
 
@@ -11,6 +13,14 @@ enrollments_schema = EnrollmentSchema(many=True)
 
 @bp.route('/enrollment', methods=['POST'])
 def add_enrollment():
+
+    auth_header = request.headers.get('Authorization')
+    
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+        
     data = request.json
 
     required_fields = ['enrollments_student_id', 'enrollments_course_id', 'enrollments_start_date', 'enrollments_end_date']
@@ -58,12 +68,28 @@ def add_enrollment():
     
 @bp.route('/enrollments', methods=["GET"])
 def all_enrollments():
+
+    auth_header = request.headers.get('Authorization')
+    
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+        
     all_enrollments = Enrollment.query.all()
     result = enrollments_schema.dump(all_enrollments)
     return jsonify(result)
 
 @bp.route('/enrollment/<id>', methods=["GET"])
 def get_enrollment(id):
+
+    auth_header = request.headers.get('Authorization')
+    
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+        
     enrollment = Enrollment.query.get(id)
 
     if enrollment is None:
@@ -73,6 +99,14 @@ def get_enrollment(id):
 
 @bp.route('/enrollment/<id>', methods=["PUT"])
 def update_enrollment(id):
+
+    auth_header = request.headers.get('Authorization')
+    
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+        
     enrollment = Enrollment.query.get(id)
 
     if enrollment is None:
@@ -89,6 +123,14 @@ def update_enrollment(id):
 
 @bp.route('/enrollment/<id>', methods=["DELETE"])
 def delete_enrollment(id):
+
+    auth_header = request.headers.get('Authorization')
+    
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+        
     enrollment = Enrollment.query.get(id)
 
     if enrollment is None:
