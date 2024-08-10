@@ -1,11 +1,10 @@
 from app import db
 import bcrypt
-import jwt
-from datetime import datetime, timedelta
 from flask import Blueprint, request, jsonify
 from app.models import User, UserRol, Rol
 from app.schema.user_schema import UserSchema
 from app.config import Config
+from app.utils.token_manager import decode_token, encode_token
 
 # Definir el blueprint para las rutas de User
 bp = Blueprint('users', __name__)
@@ -15,7 +14,14 @@ users_schema = UserSchema(many=True)
 
 @bp.route('/user', methods=["POST"])
 def add_user():
+
+    auth_header = request.headers.get('Authorization')
     
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+        
     data = request.json
 
     required_fields = ['users_name', 'users_email', 'users_password']
@@ -52,6 +58,14 @@ def add_user():
 
 @bp.route('/users', methods=["GET"])
 def all_users():
+    
+    auth_header = request.headers.get('Authorization')
+    
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
     all_users = User.query.all()
     result = users_schema.dump(all_users)
     
@@ -59,6 +73,14 @@ def all_users():
 
 @bp.route("/user/<id>", methods=["GET"])
 def get_user(id):
+
+    auth_header = request.headers.get('Authorization')
+
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
     user = User.query.get(id)
 
     if user is None:
@@ -74,6 +96,14 @@ def get_user(id):
 
 @bp.route("/user/<id>", methods=["PUT"])
 def update_user(id):
+
+    auth_header = request.headers.get('Authorization')
+    
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
     user = User.query.get(id)
 
     if user is None:
@@ -91,6 +121,13 @@ def update_user(id):
 
 @bp.route("/user/<id>", methods=["DELETE"])
 def delete_user(id):
+    auth_header = request.headers.get('Authorization')
+    
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+        
     user = User.query.get(id)
 
     if user is None:
@@ -121,11 +158,6 @@ def login():
     if not bcrypt.checkpw(users_password.encode('utf-8'), user.users_password.encode('utf-8')):
         return jsonify({'error': 'Incorrect password'}), 401
     
-    token_payload = {
-        'users_id': user.users_id,
-        'exp': datetime.utcnow() + timedelta(hours=1)
-    }
-
-    token = jwt.encode(token_payload, Config.SECRET_KEY, algorithm='HS256')
+    token = encode_token(user.users_id)
 
     return jsonify({'message': 'Login successful', 'token':token}), 200
