@@ -9,9 +9,11 @@ class User(db.Model):
     users_email = Column(String(80), unique=True, nullable=False)
     users_password = Column(String(64), nullable=False)
 
+
     user_roles = relationship('UserRol', back_populates='user')  
 
     def __init__(self, users_name, users_email, users_password):
         self.users_name = users_name
         self.users_email = users_email
         self.users_password = users_password
+

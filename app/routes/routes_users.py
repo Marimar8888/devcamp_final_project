@@ -1,8 +1,11 @@
+from app import db
 import bcrypt
+import jwt
+from datetime import datetime, timedelta
 from flask import Blueprint, request, jsonify
 from app.models import User, UserRol, Rol
 from app.schema.user_schema import UserSchema
-from app import db
+from app.config import Config
 
 # Definir el blueprint para las rutas de User
 bp = Blueprint('users', __name__)
@@ -117,5 +120,12 @@ def login():
 
     if not bcrypt.checkpw(users_password.encode('utf-8'), user.users_password.encode('utf-8')):
         return jsonify({'error': 'Incorrect password'}), 401
+    
+    token_payload = {
+        'users_id': user.users_id,
+        'exp': datetime.utcnow() + timedelta(hours=1)
+    }
 
-    return jsonify({'message': 'Login successful'}), 200
+    token = jwt.encode(token_payload, Config.SECRET_KEY, algorithm='HS256')
+
+    return jsonify({'message': 'Login successful', 'token':token}), 200
