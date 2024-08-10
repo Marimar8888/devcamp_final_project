@@ -9,6 +9,9 @@ from app.schema.course_schema import CourseSchema
 from app.schema.student_schema import StudentSchema
 from app.schema.studycenter_schema import StudyCenterSchema
 
+from app.config import Config
+from app.utils.token_manager import decode_token, encode_token
+
 from app import db
 
 # Definir el blueprint para las rutas de Professor
@@ -29,6 +32,13 @@ studyCenters_schema = StudyCenterSchema(many=True)
 
 @bp.route('/professor', methods=["POST"])
 def add_professor():
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
     data = request.json
 
     required_fields = ['professors_name', 'professors_email']
@@ -57,6 +67,13 @@ def add_professor():
 
 @bp.route('/professors', methods=["GET"])
 def all_professors():
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
     all_professors = Professor.query.all()
     resul = professors_basic_schema.dump(all_professors)
    
@@ -64,6 +81,13 @@ def all_professors():
 
 @bp.route("/professor/<id>", methods=["GET"])
 def get_professor(id):
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
     professor = Professor.query.get(id)
 
     if professor is None:
@@ -91,6 +115,13 @@ def get_professor(id):
 
 @bp.route("/professor/<id>", methods=["PUT"])
 def update_professor(id):
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
     professor = Professor.query.get(id)
 
     if professor is None:
@@ -106,6 +137,13 @@ def update_professor(id):
 
 @bp.route("/professor/<id>", methods=["DELETE"])
 def delete_professor(id):
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
     professor = Professor.query.get(id)
 
     if professor is None:
