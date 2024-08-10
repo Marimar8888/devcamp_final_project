@@ -10,6 +10,9 @@ from app.schema.course_schema import CourseSchema
 from app.schema.professor_schema import ProfessorBasicSchema
 from app.schema.studycenter_schema import StudyCenterSchema, StudyCenterDetailSchema
 
+from app.config import Config
+from app.utils.token_manager import decode_token, encode_token
+
 bp = Blueprint('studycenters', __name__)
 
 studyCenter_schema = StudyCenterSchema()
@@ -24,6 +27,13 @@ professors_schema = ProfessorBasicSchema(many=True)
 
 @bp.route('/studycenter', methods=["POST"])
 def add_studycenter():
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
     data = request.json
 
     required_fields = ['studyCenters_name', 'studyCenters_email']
@@ -52,6 +62,13 @@ def add_studycenter():
 
 @bp.route('/studycenters', methods=["GET"])
 def all_studycenters():
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+    
     all_studycenters = StudyCenter.query.all()
     result = studyCenters_schema.dump(all_studycenters)
     
@@ -59,6 +76,12 @@ def all_studycenters():
 
 @bp.route("/studycenter/<id>", methods=["GET"])
 def get_studycenter(id):
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
     studyCenter = StudyCenter.query.get(id)
 
     if studyCenter is None:
@@ -83,6 +106,13 @@ def get_studycenter(id):
 
 @bp.route("/studycenter/<id>", methods=["PUT"])
 def update_studycenter(id):
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
     studyCenter = StudyCenter.query.get(id)
 
     if studyCenter is None:
@@ -98,6 +128,13 @@ def update_studycenter(id):
 
 @bp.route("/studycenter/<id>", methods=["DELETE"])
 def delete_studycenter(id):
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
     studyCenter = StudyCenter.query.get(id)
 
     if studyCenter is None:
