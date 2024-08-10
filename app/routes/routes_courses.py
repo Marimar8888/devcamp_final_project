@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
 from app.models import Course, CourseSchema
 from app import db
+from app.config import Config
+from app.utils.token_manager import decode_token, encode_token
 
 bp = Blueprint('courses', __name__)
 
@@ -9,6 +11,12 @@ courses_schema = CourseSchema(many=True)
 
 @bp.route('/course', methods=["POST"])
 def add_course():
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
     
     data = request.json
     print("Datos recibidos:", data)  # Imprime los datos para depuración
@@ -60,6 +68,13 @@ def get_course(id):
 
 @bp.route("/course/<id>", methods=["PUT"])
 def update_course(id):
+
+    auth_header = request.headers.get('Authorization')
+
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
     course = Course.query.get(id)
 
     if course is None:
@@ -80,6 +95,13 @@ def update_course(id):
 
 @bp.route("/course/<id>", methods=["DELETE"])
 def delete_course(id):
+
+    auth_header = request.headers.get('Authorization')
+    
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
     course = Course.query.get(id)
 
     if course is None:
