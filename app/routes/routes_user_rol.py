@@ -54,7 +54,7 @@ def add_user_rol():
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': 'Couldn't add new role', 'details': str(e)}), 500
+        return jsonify({'error': 'Couldnt add new role', 'details': str(e)}), 500
 
     return jsonify({'message': 'The new role has been successfully added'}), 201
 
