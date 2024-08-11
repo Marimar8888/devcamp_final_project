@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from app.models import Student, Enrollment, Course
 from app.schema.student_schema import StudentSchema
+from app.models import User, UserRol, Rol
 from app import db
 
 from app.config import Config
@@ -40,6 +41,12 @@ def add_student():
     
     try:
         db.session.add(new_student)
+        db.session.commit()
+        student_rol = Rol.query.get(2)
+        if student_rol is None:
+            return jsonify({'error': 'Rol not found'}), 404
+        student_rol_entry = UserRol(user_id=new_student.students_user_id, rol_id=student_rol.rols_id)
+        db.session.add(student_rol_entry) 
         db.session.commit()
     except Exception as e:
         db.session.rollback()
@@ -136,6 +143,7 @@ def delete_student(id):
     if student is None:
         return jsonify({'message': 'Student not found'}), 404
 
+    UserRol.query.filter_by(user_id=student.students_user_id, rol_id=2).delete()
     db.session.delete(student)
     db.session.commit()
 

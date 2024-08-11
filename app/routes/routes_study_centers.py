@@ -5,6 +5,7 @@ from app.models.student import Student
 from app.models.course import Course
 from app.models.professor import Professor
 from app.models.studycenter_student import StudyCenterStudent
+from app.models import User, UserRol, Rol
 from app.schema.student_schema import StudentSchema
 from app.schema.course_schema import CourseSchema
 from app.schema.professor_schema import ProfessorBasicSchema
@@ -36,28 +37,39 @@ def add_studycenter():
 
     data = request.json
 
-    required_fields = ['studyCenters_name', 'studyCenters_email']
+    required_fields = ['studyCenters_name', 'studyCenters_email', 'studyCenters_user_id']
     for field in required_fields:
         if field not in data:
             return jsonify({'error': f'Campo {field} es obligatorio'}), 400
 
     studyCenters_name = data['studyCenters_name']
     studyCenters_email = data['studyCenters_email']
+    studyCenters_user_id = data ['studyCenters_user_id']
 
     existing_user = StudyCenter.query.filter_by(studyCenters_email=studyCenters_email).first()
     if existing_user:
         return jsonify({'error': 'El email ya está en uso'}), 400
 
-    new_center =  StudyCenter( studyCenters_name= studyCenters_name, studyCenters_email= studyCenters_email)
+    new_center =  StudyCenter( 
+        studyCenters_name= studyCenters_name, 
+        studyCenters_email= studyCenters_email, 
+        studyCenters_user_id = studyCenters_user_id
+    )
     
     try:
         db.session.add(new_center)
+        db.session.commit()
+        center_rol = Rol.query.get(4)
+        if center_rol is None:
+            return jsonify({'error': 'Rol not found'}), 404
+        center_rol_entry = UserRol(user_id=new_center.studyCenters_user_id, rol_id=center_rol.rols_id)
+        db.session.add(center_rol_entry) 
         db.session.commit()
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': 'No se pudo agregar el centro de estudios', 'details': str(e)}), 500
 
-    center = StudyCenter.query.get(new_center. studyCenters_id)
+    center = StudyCenter.query.get(new_center.studyCenters_id)
     return studyCenter_schema.jsonify(center), 201
 
 @bp.route('/studycenters', methods=["GET"])
@@ -139,7 +151,8 @@ def delete_studycenter(id):
 
     if studyCenter is None:
         return jsonify({'message': 'StudyCenter not found'}), 404
-
+    
+    UserRol.query.filter_by(user_id=studyCenter.studyCenters_user_id, rol_id=4).delete()
     db.session.delete(studyCenter)
     db.session.commit()
 

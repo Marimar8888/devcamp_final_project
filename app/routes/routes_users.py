@@ -44,10 +44,12 @@ def add_user():
     try:
         db.session.add(new_user)
         db.session.commit()
-        user_role = Rol.query.get(1)
-        if user_role is None:
-            return jsonify({'error': 'Role not found'}), 404
-        user_role_entry = UserRol(user_id=new_user.users_id, rol_id=user_role.rols_id)
+        user_rol = Rol.query.get(1)
+        if user_rol is None:
+            return jsonify({'error': 'Rol not found'}), 404
+        user_rol_entry = UserRol(user_id=new_user.users_id, rol_id=user_rol.rols_id)
+        db.session.add(user_rol_entry) 
+        db.session.commit()
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': 'No se pudo agregar el usuario', 'details': str(e)}), 500
@@ -132,7 +134,12 @@ def delete_user(id):
 
     if user is None:
         return jsonify({'message': 'User not found'}), 404
+    
+    roles_count = UserRol.query.filter_by(user_id=id).count()
+    if roles_count > 1:
+        return jsonify({'error': 'User cannot be deleted because it has associated roles'}), 400
 
+    UserRol.query.filter_by(user_id=user.users_id, rol_id=1).delete()
     db.session.delete(user)
     db.session.commit()
 

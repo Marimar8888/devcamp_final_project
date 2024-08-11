@@ -3,6 +3,7 @@ from app.models import Professor, ProfessorStudyCenter
 from app.models.course import Course
 from app.models.student import Student
 from app.models import StudyCenter
+from app.models import User, UserRol, Rol
 from app.models.professor_student import ProfessorStudent
 from app.schema.professor_schema import ProfessorSchema, ProfessorBasicSchema
 from app.schema.course_schema import CourseSchema
@@ -28,8 +29,6 @@ courses_schema = CourseSchema(many=True)
 studyCenter_schema = StudyCenterSchema()
 studyCenters_schema = StudyCenterSchema(many=True)
 
-
-
 @bp.route('/professor', methods=["POST"])
 def add_professor():
 
@@ -41,26 +40,33 @@ def add_professor():
 
     data = request.json
 
-    required_fields = ['professors_name', 'professors_email']
+    required_fields = ['professors_name', 'professors_email', 'professors_user_id']
     for field in required_fields:
         if field not in data:
             return jsonify({'error': f'Campo {field} es obligatorio'}), 400
 
     professors_name = data['professors_name']
     professors_email = data['professors_email']
- 
+    professors_user_id = data['professors_user_id']
+
     existing_professor = Professor.query.filter_by(professors_email=professors_email).first()
     if existing_professor:
         return jsonify({'error': 'El email ya está en uso'}), 400
 
-    new_professor =Professor(professors_name=professors_name, professors_email=professors_email)
+    new_professor =Professor(professors_name=professors_name, professors_email=professors_email, professors_user_id=professors_user_id)
     
     try:
         db.session.add(new_professor)
         db.session.commit()
+        professor_rol = Rol.query.get(3)
+        if professor_rol is None:
+            return jsonify({'error': 'Rol not found'}), 404
+        professor_rol_entry = UserRol(user_id=new_professor.professors_user_id, rol_id=professor_rol.rols_id)
+        db.session.add(professor_rol_entry) 
+        db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': 'No se pudo agregar el usuario', 'details': str(e)}), 500
+        return jsonify({'error': 'No se pudo agregar el professor', 'details': str(e)}), 500
 
     professor = Professor.query.get(new_professor.professors_id)
     return professor_schema.jsonify(professor), 201
@@ -130,7 +136,8 @@ def update_professor(id):
     data = request.json
     professor.professors_name = data.get('professors_name', professor.professors_name)
     professor.professors_email = data.get('professors_email', professor.professors_email)
-    
+    professor.professors_user_id = data.get('professors_user_id', professor.professors_user_id)
+
     db.session.commit()
 
     return professor_schema.jsonify(professor)
@@ -149,6 +156,7 @@ def delete_professor(id):
     if professor is None:
         return jsonify({'message': 'Professor not found'}), 404
 
+    UserRol.query.filter_by(user_id=professor.professors_user_id, rol_id=3).delete()
     db.session.delete(professor)
     db.session.commit()
 
