@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
 from app.models import Professor, StudyCenter, ProfessorStudyCenter
 from app.schema.professor_studycenter_schema import ProfessorStudyCenterSchema
+from app.config import Config
+from app.utils.token_manager import decode_token, encode_token
 
 from app import db
 
@@ -11,6 +13,13 @@ professor_studycenters_schema = ProfessorStudyCenterSchema(many=True)
 
 @bp.route('/professor_studycenter', methods=["POST"])
 def add_professor_studycenter():
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
     data = request.json
 
     required_fields = ['professor_id', 'studyCenter_id']
@@ -52,12 +61,26 @@ def add_professor_studycenter():
 
 @bp.route('/professor_studycenters', methods=["GET"])
 def all_professor_studycenters():
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
     all_professor_studycenters = ProfessorStudyCenter.query.all()
     result = professor_studycenters_schema.dump(all_professor_studycenters)
     return jsonify(result)
 
 @bp.route('/professor_studycenter', methods=["DELETE"])
 def delete_professor_studycenter():
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+    
     data = request.json
 
     required_fields = ['professor_id', 'studyCenter_id']
