@@ -1,7 +1,8 @@
 from flask import Blueprint, request, jsonify
 from app.models import User, Rol, UserRol
 from app.schema.user_rol_schema import UserRolSchema
-
+from app.config import Config
+from app.utils.token_manager import decode_token, encode_token
 from app import db
 
 bp = Blueprint('user_rol', __name__)
@@ -11,12 +12,19 @@ user_rols_schema = UserRolSchema(many=True)
 
 @bp.route('/user_rol', methods=["POST"])
 def add_user_rol():
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
     data = request.json
 
     required_fields = ['user_id', 'rol_id']
     for field in required_fields:
         if field not in data:
-            return jsonify({'error': f'Campo {field} es obligatorio'}), 400
+            return jsonify({'error': f'Field {field} is required'}), 400
 
     user_id = data['user_id']
     rol_id = data['rol_id']
@@ -35,7 +43,7 @@ def add_user_rol():
     existing_relationship = UserRol.query.filter_by(
         user_id=user_id,rol_id=rol_id).first()
     if existing_relationship:
-        return jsonify({'error': 'La relación ya existe'}), 400
+        return jsonify({'error': 'The relationship already exists'}), 400
 
        # Crear una nueva relación
     new_relationship = UserRol(
@@ -46,25 +54,39 @@ def add_user_rol():
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': 'No se pudo agregar el nuevo rol', 'details': str(e)}), 500
+        return jsonify({'error': 'Couldn't add new role', 'details': str(e)}), 500
 
-    return jsonify({'message': 'El nuevo rol ha sido agregado exitosamente'}), 201
+    return jsonify({'message': 'The new role has been successfully added'}), 201
 
 @bp.route('/user_rols', methods=["GET"])
 def all_user_rols():
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
     all_user_rols = UserRol.query.all()
     result = user_rols_schema.dump(all_user_rols)
     return jsonify(result)
 
 @bp.route('/user_rol', methods=["DELETE"])
 def delete_user_rol():
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
     data=request.json
 
     required_fields = ['user_id', 'rol_id']
 
     for field in required_fields:
         if field not in data:
-            return jsonify({'error:', f'Campo {field} es obligatorio'}), 400
+            return jsonify({'error:', f'Field {field} The field is required'}), 400
     
     user_id = data['user_id']
     rol_id = data['rol_id']
@@ -72,13 +94,13 @@ def delete_user_rol():
     relationship = UserRol.query.filter_by(user_id=user_id, rol_id=rol_id).first()
 
     if not relationship:
-        return jsonify({'error': 'No existe dicho rol para el usuario seleccionado'}), 404
+        return jsonify({'error': 'No such role exists for the selected user'}), 404
     
     try: 
         db.session.delete(relationship)
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': 'No se puede eliminar el rol', 'details': str(e)}), 500
+        return jsonify({'error': 'Unable to delete the role', 'details': str(e)}), 500
     
-    return jsonify({'message': 'El rol ha sido eliminado con éxito'}), 200
+    return jsonify({'message': 'The role has been successfully eliminated'}), 200
