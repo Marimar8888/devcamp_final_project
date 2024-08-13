@@ -144,7 +144,7 @@ def login():
 
     required_fields = ['users_email', 'users_password']
     for field in required_fields:
-        if field not in data:
+        if field not in data or not data[field]:
             return jsonify({'error': f'Field {field} is required'}), 400
 
     users_email = data['users_email']
