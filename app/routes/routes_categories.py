@@ -52,3 +52,38 @@ def all_categories():
 
     return jsonify(result)
 
+@bp.route('/category/<id>', methods=['GET'])
+def get_category(id):
+    category = Category.query.get(id)
+
+    if category is None:
+        return jsonify({'message': 'Category not found'}), 404
+    
+    return category_schema.jsonify(category)
+
+@bp.route('/category/<id>', methods=['PUT'])
+def update_category(id):
+
+    auth_header = request.headers.get('Authorization')
+
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
+    category = Category.query.get(id)
+
+    if category is None:
+        return jsonify({'error:': 'Category not found'}), 404
+    
+    data = request.json
+
+    category.categories_name = data.get('categories_name', category.categories_name)
+
+    db.session.commit()
+
+    return category_schema.jsonify(category)
+
+
+
+    
