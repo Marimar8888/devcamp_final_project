@@ -4,6 +4,7 @@ from .course import Course
 from .professor import Professor  
 from .study_center import StudyCenter
 from .student import Student
+from .category import Category
 from .professor_studycenter import ProfessorStudyCenter
 from .user_rol import UserRol
 from .enrollment import Enrollment
@@ -15,11 +16,14 @@ from app.schema.course_schema import CourseSchema
 from app.schema.studycenter_schema import StudyCenterSchema
 from app.schema.professor_studycenter_schema import ProfessorStudyCenterSchema 
 from app.schema.rol_schema import RolSchema
+from app.schema.category_schema import CategorySchema
 from app.schema.user_rol_schema import UserRolSchema
 from app.schema.enrollment_schema import EnrollmentSchema
 from app.schema.studycenter_student_schema import StudyCenterStudentSchema
 from app.schema.professor_student_schema import ProfessorStudentSchema
 
+def get_category_schema():
+    return CategorySchema()
 
 def get_professor_schema():
     return ProfessorSchema()
@@ -47,8 +51,8 @@ def get_professor_studycenter_schema():
 
 
 __all__ = [
-    'User', 'Course', 'Professor', 'StudyCenter', 'ProfessorStudyCenter', 'Student', 'Enrollment', 'StudyCenterStudent',
+    'User', 'Course', 'Professor', 'StudyCenter', 'ProfessorStudyCenter', 'Student', 'Enrollment', 'StudyCenterStudent', 'Category',
     'get_professor_schema', 'get_studycenter_schema', 'get_professor_studycenter_schema', 'get_user_schema', 'get_rol_schema', 
-    'get_user_rol_schema', 'get_enrollment_schema', 'get_professor_studycenter_schema'
+    'get_user_rol_schema', 'get_enrollment_schema', 'get_professor_studycenter_schema', 'get_category_schema'
 ]
 

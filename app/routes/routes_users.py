@@ -45,7 +45,7 @@ def add_user():
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': 'No se pudo agregar el usuario', 'details': str(e)}), 500
+        return jsonify({'error': 'CUnable to add user', 'details': str(e)}), 500
 
     user = User.query.get(new_user.users_id)
 

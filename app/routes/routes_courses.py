@@ -19,8 +19,7 @@ def add_course():
         return jsonify({'error': str(e)}), 401
     
     data = request.json
-    print("Datos recibidos:", data)  # Imprime los datos para depuración
-
+   
     courses_title = data.get('courses_title')
     courses_content = data.get('courses_content')
     courses_image = data.get('courses_image')
@@ -28,6 +27,7 @@ def add_course():
     courses_discounted_price = data.get('courses_discounted_price')
     courses_professor_id = data.get('courses_professor_id')
     courses_studycenter_id = data.get('courses_studycenter_id')
+    courses_category_id = data.get('courses_category_id')
  
     if courses_title is None or courses_price is None:
         return jsonify({'error': 'Faltan campos obligatorios en el JSON'}), 400
@@ -40,7 +40,8 @@ def add_course():
         courses_price=courses_price,
         courses_discounted_price=courses_discounted_price,
         courses_professor_id=courses_professor_id,
-        courses_studycenter_id=courses_studycenter_id
+        courses_studycenter_id=courses_studycenter_id,
+        courses_category_id=courses_category_id
     )
 
     db.session.add(new_course)
@@ -88,6 +89,7 @@ def update_course(id):
     course.courses_discounted_price = data.get('courses_discounted_price', course.courses_discounted_price)
     course.courses_professor_id = data.get('courses_professor_id', course.courses_professor_id)
     course.courses_studycenter_id = data.get('courses_studycenter_id', course.courses_studycenter_id)
+    course.courses_category_id = data.get('courses_category_id', course.courses_category_id)
 
     db.session.commit()
 
