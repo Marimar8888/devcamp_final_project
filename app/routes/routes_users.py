@@ -15,18 +15,11 @@ users_schema = UserSchema(many=True)
 @bp.route('/user', methods=["POST"])
 def add_user():
 
-    auth_header = request.headers.get('Authorization')
-    
-    try:
-        decoded_token = decode_token(auth_header)
-    except ValueError as e:
-        return jsonify({'error': str(e)}), 401
-        
     data = request.json
 
     required_fields = ['users_name', 'users_email', 'users_password']
     for field in required_fields:
-        if field not in data:
+        if field not in data or not data[field]:
             return jsonify({'error': f'Campo {field} es obligatorio'}), 400
 
     users_name = data['users_name']
