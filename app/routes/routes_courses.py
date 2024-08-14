@@ -95,6 +95,44 @@ def update_course(id):
 
     return course_schema.jsonify(course)
 
+@bp.route("/course/<id>", methods=["PATCH"])
+def updatePatch_course(id):
+
+    auth_header = request.headers.get('Authorization')
+
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+    
+    course = Course.query.get(id)
+
+    if course is None:
+        return jsonify({'message': 'Course not found'}), 404
+    
+    data = request.json
+
+    if 'courses_title' in data:
+        course.courses_title = data['courses_title']
+    if 'courses_content' in data:
+        course.courses_content = data['courses_content']
+    if 'courses_image' in data:
+        course.courses_image = data['courses_image']
+    if 'courses_price' in data:
+        course.courses_price = data['courses_price']
+    if 'courses_discounted_price' in data:
+        course.courses_discounted_price = data['courses_discounted_price']
+    if 'courses_professor_id' in data:
+        course.courses_professor_id = data['courses_professor_id']
+    if 'courses_studycenter_id' in data:
+        course.courses_studycenter_id = data['courses_studycenter_id']
+    if 'courses_category_id' in data:
+        course.courses_category_id = data['courses_category_id']
+
+    db.session.commit()
+
+    return course_schema.jsonify(course)
+
 @bp.route("/course/<id>", methods=["DELETE"])
 def delete_course(id):
 
