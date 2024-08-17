@@ -14,7 +14,7 @@ def add_course():
     print("Request Headers:", request.headers)
     print("Content-Type:", request.content_type)
     print("Files:", request.files)
-    if request.content_type != 'multipart/form-data':
+    if 'multipart/form-data' not in request.content_type:
         return jsonify({'error': 'Unsupported Media Type'}), 415
 
     # Obtener los datos del formulario
