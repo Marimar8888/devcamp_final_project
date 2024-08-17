@@ -10,6 +10,7 @@ ma = Marshmallow()
 
 def create_app():
     app = Flask(__name__)
+    CORS(app, resources={r"/*": {"origins": "*"}})
     
     # Cargar configuración
     app.config.from_object('app.config.Config')

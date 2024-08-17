@@ -11,28 +11,31 @@ courses_schema = CourseSchema(many=True)
 
 @bp.route('/course', methods=["POST"])
 def add_course():
+    print("Request Headers:", request.headers)
+    print("Content-Type:", request.content_type)
+    print("Files:", request.files)
+    if request.content_type != 'multipart/form-data':
+        return jsonify({'error': 'Unsupported Media Type'}), 415
 
-    auth_header = request.headers.get('Authorization')
-    try:
-        decoded_token = decode_token(auth_header)
-    except ValueError as e:
-        return jsonify({'error': str(e)}), 401
-    
-    data = request.json
-   
-    courses_title = data.get('courses_title')
-    courses_content = data.get('courses_content')
-    courses_image = data.get('courses_image')
-    courses_price = data.get('courses_price')
-    courses_discounted_price = data.get('courses_discounted_price')
-    courses_professor_id = data.get('courses_professor_id')
-    courses_studycenter_id = data.get('courses_studycenter_id')
-    courses_category_id = data.get('courses_category_id')
- 
-    if courses_title is None or courses_price is None:
-        return jsonify({'error': 'Faltan campos obligatorios en el JSON'}), 400
+    # Obtener los datos del formulario
+    courses_title = request.form.get('courses_title')
+    courses_content = request.form.get('courses_content')
+    courses_price = request.form.get('courses_price')
+    courses_discounted_price = request.form.get('courses_discounted_price')
+    courses_professor_id = request.form.get('courses_professor_id')
+    courses_studycenter_id = request.form.get('courses_studycenter_id')
+    courses_category_id = request.form.get('courses_category_id')
 
-    # Crea un nuevo curso con campos opcionales que pueden ser None
+    # Obtener el archivo
+    courses_image = request.files.get('courses_image')
+
+    if not courses_title or not courses_price:
+        return jsonify({'error': 'Faltan campos obligatorios'}), 400
+
+    if courses_image:
+        print("Image filename:", courses_image.filename)
+
+    # Procesar el curso y guardar en la base de datos
     new_course = Course(
         courses_title=courses_title,
         courses_content=courses_content,
@@ -48,7 +51,6 @@ def add_course():
     db.session.commit()
 
     course = Course.query.get(new_course.courses_id)
-
     return course_schema.jsonify(course)
 
 @bp.route('/courses', methods=["GET"])
