@@ -4,7 +4,7 @@ from flask import Blueprint, request, jsonify
 from app.models import User, UserRol, Rol
 from app.schema.user_schema import UserSchema
 from app.config import Config
-from app.utils.token_manager import decode_token, encode_token
+from app.utils import decode_token, encode_token
 
 # Definir el blueprint para las rutas de User
 bp = Blueprint('users', __name__)
