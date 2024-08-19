@@ -15,17 +15,11 @@ course_schema = CourseSchema()
 courses_schema = CourseSchema(many=True)
 
 @bp.route('/course', methods=["POST"])
-def add_course():
-    current_app.logger.info("Iniciando proceso de agregar curso")
-    
+def add_course():    
     if 'multipart/form-data' not in request.content_type:
         return jsonify({'error': 'Unsupported Media Type'}), 415
 
-    current_app.logger.info(f"Archivos recibidos: {request.files}")
-    current_app.logger.info(f"Form recibido: {request.form}")
-
     courses_image_file = request.files.get('file')
-    current_app.logger.info(f"Archivo recibido: {courses_image_file.filename if courses_image_file else 'No se recibió archivo'}")
 
     courses_title = request.form.get('courses_title')
     courses_content = request.form.get('courses_content')
@@ -37,15 +31,11 @@ def add_course():
 
     upload_folder = current_app.config['UPLOAD_FOLDER']
     if courses_image_file and courses_image_file.filename:
-        current_app.logger.info("Procesando la imagen para guardar")
         filename, error = save_file(courses_image_file, upload_folder)
 
         if error:
-            current_app.logger.error(f"Error al guardar el archivo: {error}")
             return jsonify({'error': error}), 400
-        
-        current_app.logger.info(f"Archivo guardado como: {filename}")
- 
+         
         file_url = url_for('static', filename=f'uploads/{filename}', _external=True)
     else:
         file_url = None  
@@ -66,7 +56,6 @@ def add_course():
 
     db.session.add(new_course)
     db.session.commit()
-    current_app.logger.info(f"Curso guardado con ID: {new_course.courses_id}")
     course = Course.query.get(new_course.courses_id)
     return course_schema.jsonify(course)
 
@@ -167,8 +156,15 @@ def delete_course(id):
     if course is None:
         return jsonify({'message': 'Course not found'}), 404
     
+    image_path = None
+    if course.courses_image:
+        image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], os.path.basename(course.courses_image))
+    
     db.session.delete(course)
     db.session.commit()
+
+    if image_path and os.path.exists(image_path):
+        os.remove(image_path)
 
     response = jsonify({'message': 'Course deleted'})
     response.headers.add('Access-Control-Allow-Origin', '*')
