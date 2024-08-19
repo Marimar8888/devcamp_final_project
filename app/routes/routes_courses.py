@@ -18,19 +18,15 @@ courses_schema = CourseSchema(many=True)
 def add_course():
     current_app.logger.info("Iniciando proceso de agregar curso")
     
-    # Verificar el tipo de contenido del request
     if 'multipart/form-data' not in request.content_type:
         return jsonify({'error': 'Unsupported Media Type'}), 415
 
-    # Log de todos los archivos y campos recibidos
     current_app.logger.info(f"Archivos recibidos: {request.files}")
     current_app.logger.info(f"Form recibido: {request.form}")
 
-    # Obtener el archivo (imagen) del formulario
     courses_image_file = request.files.get('file')
     current_app.logger.info(f"Archivo recibido: {courses_image_file.filename if courses_image_file else 'No se recibió archivo'}")
 
-    # Obtener los datos del formulario
     courses_title = request.form.get('courses_title')
     courses_content = request.form.get('courses_content')
     courses_price = request.form.get('courses_price')
@@ -39,11 +35,9 @@ def add_course():
     courses_studycenter_id = request.form.get('courses_studycenter_id')
     courses_category_id = request.form.get('courses_category_id')
 
-    # Procesar el archivo de imagen
     upload_folder = current_app.config['UPLOAD_FOLDER']
     if courses_image_file and courses_image_file.filename:
         current_app.logger.info("Procesando la imagen para guardar")
-        # Guardar la imagen en el servidor usando la función save_file
         filename, error = save_file(courses_image_file, upload_folder)
 
         if error:
@@ -51,21 +45,18 @@ def add_course():
             return jsonify({'error': error}), 400
         
         current_app.logger.info(f"Archivo guardado como: {filename}")
-        # Crear la URL relativa para almacenar en la base de datos
-        # file_url = os.path.join('static/uploads', filename)  # **Cambio: Crear URL relativa para la imagen en lugar de datos binarios**
+ 
         file_url = url_for('static', filename=f'uploads/{filename}', _external=True)
     else:
-        file_url = None  # Si no hay imagen, asigna None
+        file_url = None  
 
-    # Verificar que todos los campos obligatorios estén presentes
     if not courses_title or not courses_price or not courses_professor_id or not courses_category_id:
         return jsonify({'error': 'Faltan campos obligatorios'}), 400
 
-    # Procesar el curso y guardar en la base de datos
     new_course = Course(
         courses_title=courses_title,
         courses_content=courses_content,
-        courses_image=file_url,  # **Cambio: Guardar la URL de la imagen en lugar de los datos binarios**
+        courses_image=file_url,  
         courses_price=courses_price,
         courses_discounted_price=courses_discounted_price,
         courses_professor_id=courses_professor_id,
@@ -178,7 +169,7 @@ def delete_course(id):
     
     db.session.delete(course)
     db.session.commit()
-    
+
     response = jsonify({'message': 'Course deleted'})
     response.headers.add('Access-Control-Allow-Origin', '*')
 
