@@ -129,7 +129,7 @@ def updatePatch_course(id):
     if course is None:
         return jsonify({'message': 'Course not found'}), 404
     
-    data = request.json
+    data = request.json 
 
     if 'courses_title' in data:
         course.courses_title = data['courses_title']
