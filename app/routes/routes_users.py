@@ -159,5 +159,7 @@ def login():
         return jsonify({'error': 'Incorrect password'}), 401
     
     token = encode_token(user.users_id)
+    user_name = user.users_name
+    
 
-    return jsonify({'message': 'Login successful', 'token':token}), 200
+    return jsonify({'message': 'Login successful', 'token':token, 'user_name':user_name}), 200
