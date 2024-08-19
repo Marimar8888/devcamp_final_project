@@ -178,5 +178,8 @@ def delete_course(id):
     
     db.session.delete(course)
     db.session.commit()
+    
+    response = jsonify({'message': 'Course deleted'})
+    response.headers.add('Access-Control-Allow-Origin', '*')
 
     return jsonify({'message': 'Course deleted'})
