@@ -1,5 +1,5 @@
 import base64
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify, current_app, url_for
 from app import db
 import os
 
@@ -52,7 +52,8 @@ def add_course():
         
         current_app.logger.info(f"Archivo guardado como: {filename}")
         # Crear la URL relativa para almacenar en la base de datos
-        file_url = os.path.join('static/uploads', filename)  # **Cambio: Crear URL relativa para la imagen en lugar de datos binarios**
+        # file_url = os.path.join('static/uploads', filename)  # **Cambio: Crear URL relativa para la imagen en lugar de datos binarios**
+        file_url = url_for('static', filename=f'uploads/{filename}', _external=True)
     else:
         file_url = None  # Si no hay imagen, asigna None
 
