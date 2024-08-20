@@ -2,6 +2,7 @@ import jwt
 from app.config import Config
 from datetime import datetime, timedelta
 
+
 def decode_token(auth_header):
       
     if not auth_header:
@@ -28,3 +29,11 @@ def encode_token(user_id):
     token = jwt.encode(token_payload, Config.SECRET_KEY, algorithm='HS256')
 
     return token
+
+def get_user_id_from_token(auth_header):
+
+    try:
+        decoded_token = decode_token(auth_header)
+        return decoded_token.get('users_id')
+    except ValueError as e:
+        raise ValueError(f"Error al decodificar el token: {str(e)}")

@@ -5,6 +5,7 @@ from app.models import User, UserRol, Rol
 from app.schema.user_schema import UserSchema
 from app.config import Config
 from app.utils import decode_token, encode_token
+from app.utils.token_manager import get_user_id_from_token
 
 # Definir el blueprint para las rutas de User
 bp = Blueprint('users', __name__)
@@ -163,3 +164,15 @@ def login():
     
 
     return jsonify({'message': 'Login successful', 'token':token, 'user_name':user_name}), 200
+
+@bp.route('/get_user_id', methods=["GET"])
+def get_user_id():
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        return jsonify({"error": "Authorization header is missing"}), 401
+    
+    try:
+        user_id = get_user_id_from_token(auth_header)
+        return jsonify({"users_id": user_id}), 200
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 401

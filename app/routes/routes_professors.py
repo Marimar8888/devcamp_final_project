@@ -85,32 +85,35 @@ def all_professors():
    
     return jsonify(resul)
 
-@bp.route("/professor/<id>", methods=["GET"])
-def get_professor(id):
-
+@bp.route("/professor/<user_id>", methods=["GET"])
+def get_professor(user_id):
     auth_header = request.headers.get('Authorization')
     try:
         decoded_token = decode_token(auth_header)
     except ValueError as e:
         return jsonify({'error': str(e)}), 401
 
-    professor = Professor.query.get(id)
+    # Buscar el profesor usando el user_id
+    professor = Professor.query.filter_by(professors_user_id=user_id).first()
 
     if professor is None:
         return jsonify({'message': 'Professor not found'}), 404
 
     result = professor_schema.dump(professor)
 
-    professor_students = ProfessorStudent.query.filter_by(professor_student_professor_id=id).all()
+    # Obtener los estudiantes del profesor
+    professor_students = ProfessorStudent.query.filter_by(professor_student_professor_id=professor.professors_id).all()
     student_ids = [ps.professor_student_student_id for ps in professor_students]
     students = Student.query.filter(Student.students_id.in_(student_ids)).all()
     students_data = students_schema.dump(students)
     result['students'] = students_data
-   
-    courses = Course.query.filter_by(courses_professor_id=id).all()
+
+    # Obtener los cursos del profesor
+    courses = Course.query.filter_by(courses_professor_id=professor.professors_id).all()
     result['courses'] = courses_schema.dump(courses)
 
-    professor_study_centers = ProfessorStudyCenter.query.filter_by(professor_id=id).all()
+    # Obtener los centros de estudio del profesor
+    professor_study_centers = ProfessorStudyCenter.query.filter_by(professor_id=professor.professors_id).all()
     study_center_ids = [psc.studyCenter_id for psc in professor_study_centers]
     study_centers = StudyCenter.query.filter(StudyCenter.studyCenters_id.in_(study_center_ids)).all()
 
@@ -118,6 +121,42 @@ def get_professor(id):
     result['study_centers'] = study_centers_data
 
     return jsonify(result)
+
+# @bp.route("/professor/<id>", methods=["GET"])
+# def get_professor(id):
+
+#     auth_header = request.headers.get('Authorization')
+#     try:
+#         decoded_token = decode_token(auth_header)
+#     except ValueError as e:
+#         return jsonify({'error': str(e)}), 401
+
+#     professor = Professor.query.get(id)
+
+#     if professor is None:
+#         return jsonify({'message': 'Professor not found'}), 404
+
+#     result = professor_schema.dump(professor)
+
+#     professor_students = ProfessorStudent.query.filter_by(professor_student_professor_id=id).all()
+#     student_ids = [ps.professor_student_student_id for ps in professor_students]
+#     students = Student.query.filter(Student.students_id.in_(student_ids)).all()
+#     students_data = students_schema.dump(students)
+#     result['students'] = students_data
+   
+#     courses = Course.query.filter_by(courses_professor_id=id).all()
+#     result['courses'] = courses_schema.dump(courses)
+
+#     professor_study_centers = ProfessorStudyCenter.query.filter_by(professor_id=id).all()
+#     study_center_ids = [psc.studyCenter_id for psc in professor_study_centers]
+#     study_centers = StudyCenter.query.filter(StudyCenter.studyCenters_id.in_(study_center_ids)).all()
+
+#     study_centers_data = studyCenters_schema.dump(study_centers)
+#     result['study_centers'] = study_centers_data
+
+#     return jsonify(result)
+
+
 
 @bp.route("/professor/<id>", methods=["PUT"])
 def update_professor(id):
