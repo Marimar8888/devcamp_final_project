@@ -93,15 +93,19 @@ def get_professor(user_id):
     except ValueError as e:
         return jsonify({'error': str(e)}), 401
 
-    # Buscar el profesor usando el user_id
     professor = Professor.query.filter_by(professors_user_id=user_id).first()
 
     if professor is None:
         return jsonify({'message': 'Professor not found'}), 404
 
-    result = professor_schema.dump(professor)
+    result = {
+        'professor': {
+            'professor_id': professor.professors_id,
+            'professor_name': professor.professors_name,
+            'professor_email': professor.professors_email
+        }
+    }
 
-    # Obtener los estudiantes del profesor
     professor_students = ProfessorStudent.query.filter_by(professor_student_professor_id=professor.professors_id).all()
     student_ids = [ps.professor_student_student_id for ps in professor_students]
     students = Student.query.filter(Student.students_id.in_(student_ids)).all()
