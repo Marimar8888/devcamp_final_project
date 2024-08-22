@@ -17,7 +17,6 @@ def save_file(file, upload_folder):
         return None, str(e)
 
 def allowed_file(filename):
-    """Check if the file has an allowed extension."""
     allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in allowed_extensions

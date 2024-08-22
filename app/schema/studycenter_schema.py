@@ -10,7 +10,7 @@ class StudyCenterSchema(ma.SQLAlchemyAutoSchema):
 
 class StudyCenterDetailSchema(ma.SQLAlchemyAutoSchema):
    
-    students = ma.Nested('StudentSchema', many=True)  # Asegúrate de definir o importar StudentSchema
+    students = ma.Nested('StudentSchema', many=True)  
 
     class Meta:
         model = StudyCenter

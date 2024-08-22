@@ -106,17 +106,6 @@ def get_professor(user_id):
         }
     }
 
-    professor_students = ProfessorStudent.query.filter_by(professor_student_professor_id=professor.professors_id).all()
-    student_ids = [ps.professor_student_student_id for ps in professor_students]
-    students = Student.query.filter(Student.students_id.in_(student_ids)).all()
-    students_data = students_schema.dump(students)
-    result['students'] = students_data
-
-    # Obtener los cursos del profesor
-    courses = Course.query.filter_by(courses_professor_id=professor.professors_id).all()
-    result['courses'] = courses_schema.dump(courses)
-
-    # Obtener los centros de estudio del profesor
     professor_study_centers = ProfessorStudyCenter.query.filter_by(professor_id=professor.professors_id).all()
     study_center_ids = [psc.studyCenter_id for psc in professor_study_centers]
     study_centers = StudyCenter.query.filter(StudyCenter.studyCenters_id.in_(study_center_ids)).all()
