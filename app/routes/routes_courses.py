@@ -124,8 +124,6 @@ def updatePatch_course(id):
         course.courses_title = data['courses_title']
     if 'courses_content' in data:
         course.courses_content = data['courses_content']
-    # if 'courses_image' in data:
-    #     course.courses_image = data['courses_image']
     if 'courses_price' in data:
         course.courses_price = data['courses_price']
     if 'courses_discounted_price' in data:
@@ -138,24 +136,15 @@ def updatePatch_course(id):
         course.courses_category_id = data['courses_category_id']
 
     if 'courses_image' in data:
-    # Si se está eliminando la imagen (es decir, `courses_image` es `None`),
-    # borra el archivo de la carpeta 'static/uploads'
         if data['courses_image'] is None and course.courses_image:
             try:
                 image_filename = os.path.basename(course.courses_image)
                 image_path = os.path.join('app', 'static', 'uploads', image_filename)
-                print(f"Intentando eliminar la imagen en la ruta: {image_path}")  # Depuración
-
                 if os.path.exists(image_path):
-                    print("El archivo existe. Procediendo a eliminarlo...")  # Depuración
                     os.remove(image_path)
-                    print("Archivo eliminado exitosamente.")  # Depuración
                 else:
-                    print("El archivo no existe en la ruta especificada.")  # Depuración
-
+                    print("El archivo no existe en la ruta especificada.")  
             except Exception as e:
-                # Maneja cualquier excepción que ocurra al eliminar el archivo
-                print(f"Error al intentar eliminar el archivo: {str(e)}")  # Depuración
                 return jsonify({'error': 'Failed to delete the image file', 'details': str(e)}), 500
 
         course.courses_image = data['courses_image']
