@@ -75,6 +75,15 @@ def get_course(id):
 
     return course_schema.jsonify(course)
 
+@bp.route("/store/courses/<categoryId>", methods=["GET"])
+def get_courses_by_category(categoryId):
+    courses = Course.query.filter_by(courses_category_id=categoryId).all()
+
+    if not courses:
+        return jsonify({'message': 'Courses not found'}), 404
+
+    return course_schema.jsonify(courses, many=True)
+
 @bp.route("/course/<id>", methods=["PUT"])
 def update_course(id):
 
