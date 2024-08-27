@@ -176,3 +176,15 @@ def get_user_id():
         return jsonify({"users_id": user_id}), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 401
+
+@bp.route('/get_verify_token', methods=["GET"])
+def get_verify_token():
+    auth_header = request.headers.get('Authorization')    
+    if not auth_header:
+        return jsonify({"error": "Authorization header is missing"}), 401
+       
+    try:
+        decoded_token = decode_token(auth_header)
+        return jsonify({"message": "Token is valid"}), 200
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 401
