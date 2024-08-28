@@ -32,12 +32,23 @@ def add_student():
     students_first_name = data['students_first_name']
     students_last_name = data['students_last_name']
     students_user_id = data['students_user_id']
+    students_dni = data['students_dni']
+    students_address = data['students_address']
+    students_city = data['students_city']
+    students_postal = data['students_postal']
+    students_number_card = data['students_number_card']
+    students_exp_date = data['students_exp_date']
+    students_cvc = data['students_cvc']
 
     existing_student = Student.query.filter_by(students_user_id=students_user_id).first()
     if existing_student:
         return jsonify({'error': 'El estudiante ya existe'}), 400
 
-    new_student = Student(students_first_name=students_first_name, students_last_name=students_last_name, students_user_id=students_user_id)
+    new_student = Student(
+        students_first_name=students_first_name, students_last_name=students_last_name, students_user_id=students_user_id,
+        students_dni = students_dni, students_address = students_address, students_city = students_city, students_postal = students_postal,
+        students_number_card = students_number_card, students_exp_date = students_exp_date, students_cvc = students_cvc
+    )
     
     try:
         db.session.add(new_student)
@@ -93,6 +104,13 @@ def get_student(id):
         'students_first_name': student.students_first_name,
         'students_last_name': student.students_last_name,
         'students_user_id': student.students_user_id,
+        'students_dni': student.students_dni,
+        'students_address': student.students_address,
+        'students_city': student.students_city,
+        'students_postal': student.students_postal,
+        'students_number_card': student.students_number_card,
+        'students_exp_date': student.students_exp_date,
+        'students_cvc': student.students_cvc,
         'courses': [{'courses_id': course.courses_id,
                      'courses_title': course.courses_title,
                      'courses_content': course.courses_content,
@@ -124,6 +142,13 @@ def update_student(id):
     student.students_first_name = data.get('students_first_name', student.students_first_name)
     student.students_last_name = data.get('students_last_name', student.students_last_name)
     student.students_user_id = data.get('students_user_id', student.students_user_id)
+    student.students_dni = data.get('students_dni', student.students_dni)
+    student.students_address = data.get('students_address', student.students_address)
+    student.students_city = data.get('students_city', student.students_city)
+    student.students_postal = data.get('students_postal', student.students_postal)
+    student.students_number_card = data.get('students_number_card', student.students_number_card)
+    student.students_exp_date = data.get('students_exp_date', student.students_exp_date)
+    student.students_cvc = data.get('students_cvc', student.students_cvc)
 
     db.session.commit()
 
