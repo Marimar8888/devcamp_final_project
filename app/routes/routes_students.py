@@ -148,3 +148,20 @@ def delete_student(id):
     db.session.commit()
 
     return jsonify({'message': 'Student deleted'})
+
+
+@bp.route("/student/user_id/<user_id>", methods=["GET"])
+def get_student_by_user_id(user_id):
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
+    student = Student.query.filter_by(students_user_id=user_id).first()
+
+    if student is None:
+        return jsonify({'message': 'Student not found'}), 404
+
+    return jsonify({'students_id': student.students_id})
