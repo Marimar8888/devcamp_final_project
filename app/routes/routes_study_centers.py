@@ -116,6 +116,14 @@ def get_studycenter(id):
     return jsonify(result)
 
 
+# //TODO
+
+# @bp.route("/studycenter/user_id/<user_id>", methods=["GET"])
+# def get_studycenter(id):
+  
+#     return 
+
+
 @bp.route("/studycenter/<id>", methods=["PUT"])
 def update_studycenter(id):
 

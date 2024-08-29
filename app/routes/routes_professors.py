@@ -40,20 +40,36 @@ def add_professor():
 
     data = request.json
 
-    required_fields = ['professors_name', 'professors_email', 'professors_user_id']
+    required_fields = [
+        'professors_first_name', 'professors_last_name', 'professors_email', 'professors_user_id', 'professors_dni', 'professors_address', 
+        'professors_city', 'professors_postal', 'professors_number_card', 'professors_exp_date', 'professors_cvc'
+    ]
     for field in required_fields:
         if field not in data:
             return jsonify({'error': f'Campo {field} es obligatorio'}), 400
 
-    professors_name = data['professors_name']
+    professors_first_name = data['professors_first_name']
+    professors_last_name = data['professors_last_name']
     professors_email = data['professors_email']
     professors_user_id = data['professors_user_id']
+    professors_dni = data['professors_dni']
+    professors_address = data['professors_address']
+    professors_city = data['professors_city']
+    professors_postal = data['professors_postal']
+    professors_number_card = data['professors_number_card']
+    professors_exp_date = data['professors_exp_date']
+    professors_cvc = data['professors_cvc']
 
     existing_professor = Professor.query.filter_by(professors_email=professors_email).first()
     if existing_professor:
         return jsonify({'error': 'El email ya está en uso'}), 400
 
-    new_professor =Professor(professors_name=professors_name, professors_email=professors_email, professors_user_id=professors_user_id)
+    new_professor =Professor(
+        professors_first_name=professors_first_name, professors_last_name=professors_last_name, professors_email=professors_email, professors_user_id=professors_user_id,
+        professors_dni = professors_dni, professors_address = professors_address, professors_city = professors_city,
+        professors_postal = professors_postal, professors_number_card = professors_number_card, professors_exp_date = professors_exp_date,
+        professors_cvc = professors_cvc
+    )
     
     try:
         db.session.add(new_professor)
@@ -85,8 +101,9 @@ def all_professors():
    
     return jsonify(resul)
 
-@bp.route("/professor/<user_id>", methods=["GET"])
-def get_professor(user_id):
+@bp.route("/professor/user_id/<user_id>", methods=["GET"])
+def get_professor_by_user_id(user_id):
+
     auth_header = request.headers.get('Authorization')
     try:
         decoded_token = decode_token(auth_header)
@@ -98,15 +115,34 @@ def get_professor(user_id):
     if professor is None:
         return jsonify({'message': 'Professor not found'}), 404
 
-    result = {
-        'professor': {
-            'professor_id': professor.professors_id,
-            'professor_name': professor.professors_name,
-            'professor_email': professor.professors_email
-        }
-    }
+    return jsonify({'professors_id': professor.professors_id})
 
-    professor_study_centers = ProfessorStudyCenter.query.filter_by(professor_id=professor.professors_id).all()
+@bp.route("/professor/<id>", methods=["GET"])
+def get_professor(id):
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
+    professor = Professor.query.get(id)
+
+    if professor is None:
+        return jsonify({'message': 'Professor not found'}), 404
+
+    result = professor_schema.dump(professor)
+
+    professor_students = ProfessorStudent.query.filter_by(professor_student_professor_id=id).all()
+    student_ids = [ps.professor_student_student_id for ps in professor_students]
+    students = Student.query.filter(Student.students_id.in_(student_ids)).all()
+    students_data = students_schema.dump(students)
+    result['students'] = students_data
+   
+    courses = Course.query.filter_by(courses_professor_id=id).all()
+    result['courses'] = courses_schema.dump(courses)
+
+    professor_study_centers = ProfessorStudyCenter.query.filter_by(professor_id=id).all()
     study_center_ids = [psc.studyCenter_id for psc in professor_study_centers]
     study_centers = StudyCenter.query.filter(StudyCenter.studyCenters_id.in_(study_center_ids)).all()
 
@@ -114,40 +150,6 @@ def get_professor(user_id):
     result['study_centers'] = study_centers_data
 
     return jsonify(result)
-
-# @bp.route("/professor/<id>", methods=["GET"])
-# def get_professor(id):
-
-#     auth_header = request.headers.get('Authorization')
-#     try:
-#         decoded_token = decode_token(auth_header)
-#     except ValueError as e:
-#         return jsonify({'error': str(e)}), 401
-
-#     professor = Professor.query.get(id)
-
-#     if professor is None:
-#         return jsonify({'message': 'Professor not found'}), 404
-
-#     result = professor_schema.dump(professor)
-
-#     professor_students = ProfessorStudent.query.filter_by(professor_student_professor_id=id).all()
-#     student_ids = [ps.professor_student_student_id for ps in professor_students]
-#     students = Student.query.filter(Student.students_id.in_(student_ids)).all()
-#     students_data = students_schema.dump(students)
-#     result['students'] = students_data
-   
-#     courses = Course.query.filter_by(courses_professor_id=id).all()
-#     result['courses'] = courses_schema.dump(courses)
-
-#     professor_study_centers = ProfessorStudyCenter.query.filter_by(professor_id=id).all()
-#     study_center_ids = [psc.studyCenter_id for psc in professor_study_centers]
-#     study_centers = StudyCenter.query.filter(StudyCenter.studyCenters_id.in_(study_center_ids)).all()
-
-#     study_centers_data = studyCenters_schema.dump(study_centers)
-#     result['study_centers'] = study_centers_data
-
-#     return jsonify(result)
 
 
 
@@ -166,9 +168,17 @@ def update_professor(id):
         return jsonify({'message': 'Professor not found'}), 404
 
     data = request.json
-    professor.professors_name = data.get('professors_name', professor.professors_name)
+    professor.professors_first_name = data.get('professors_first_name', professor.professors_first_name)
+    professor.professors_last_name = data.get('professors_last_name', professor.professors_last_name)
     professor.professors_email = data.get('professors_email', professor.professors_email)
     professor.professors_user_id = data.get('professors_user_id', professor.professors_user_id)
+    professor.professors_dni = data.get('professors_dni', professor.professors_dni)
+    professor.professors_address = data.get('professors_address', professor.professors_address)
+    professor.professors_city = data.get('professors_city', professor.professors_city)
+    professor.professors_postal = data.get('professors_postal', professor.professors_postal)
+    professor.professors_number_card = data.get('professors_number_card', professor.professors_number_card)
+    professor.professors_exp_date = data.get('professors_exp_date', professor.professors_exp_date)
+    professor.professors_cvc = data.get('professors_cvc', professor.professors_cvc)
 
     db.session.commit()
 
@@ -193,3 +203,4 @@ def delete_professor(id):
     db.session.commit()
 
     return jsonify({'message': 'Professor deleted'})
+
