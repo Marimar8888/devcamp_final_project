@@ -116,12 +116,23 @@ def get_studycenter(id):
     return jsonify(result)
 
 
-# //TODO
+@bp.route("/studycenter/user_id/<user_id>", methods=["GET"])
+def get_studycenter_by_userId(user_id):
 
-# @bp.route("/studycenter/user_id/<user_id>", methods=["GET"])
-# def get_studycenter(id):
-  
-#     return 
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
+    studyCenters_user = StudyCenter.query.filter_by(studyCenters_user_id=user_id).all()
+
+    if studyCenters_user is None:
+        return jsonify({'message': 'StudyCenter not found'}), 404
+    
+    result = studyCenters_schema.dump(studyCenters_user)
+
+    return jsonify(result)
 
 
 @bp.route("/studycenter/<id>", methods=["PUT"])
@@ -141,6 +152,7 @@ def update_studycenter(id):
     data = request.json
     studyCenter.studyCenters_name = data.get('studyCenters_name', studyCenter.studyCenters_name)
     studyCenter.studyCenters_email = data.get('studyCenters_email', studyCenter.studyCenters_email)
+    studyCenter.studyCenters_user_id = data.get('studyCenters_user_id', studyCenter.studyCenters_user_id)
  
     db.session.commit()
 

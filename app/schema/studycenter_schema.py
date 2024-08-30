@@ -6,7 +6,7 @@ class StudyCenterSchema(ma.SQLAlchemyAutoSchema):
         model = StudyCenter
         load_instance = True
         include_relationships = False
-
+        fields = ('studyCenters_id', 'studyCenters_name', 'studyCenters_email', 'studyCenters_user_id')
 
 class StudyCenterDetailSchema(ma.SQLAlchemyAutoSchema):
    

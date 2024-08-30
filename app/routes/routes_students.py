@@ -24,7 +24,10 @@ def add_student():
     
     data = request.json
 
-    required_fields = ['students_first_name', 'students_last_name', 'students_user_id']
+    required_fields = [
+        'students_first_name', 'students_last_name', 'students_user_id', 'students_dni', 'students_address',
+        'students_city', 'students_postal', 'students_number_card', 'students_exp_date', 'students_cvc'
+        ]
     for field in required_fields:
         if field not in data:
             return jsonify({'error': f'Campo {field} es obligatorio'}), 400
