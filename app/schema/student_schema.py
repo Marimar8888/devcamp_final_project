@@ -7,6 +7,7 @@ class StudentSchema(Schema):
     students_id = fields.Int()
     students_first_name = fields.Str()
     students_last_name = fields.Str()
+    students_email = fields.Str()
     students_user_id = fields.Int()
     students_dni = fields.Str()
     students_address = fields.Str()

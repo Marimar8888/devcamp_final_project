@@ -25,7 +25,7 @@ def add_student():
     data = request.json
 
     required_fields = [
-        'students_first_name', 'students_last_name', 'students_user_id', 'students_dni', 'students_address',
+        'students_first_name', 'students_last_name', 'students_email', 'students_user_id', 'students_dni', 'students_address',
         'students_city', 'students_postal', 'students_number_card', 'students_exp_date', 'students_cvc'
         ]
     for field in required_fields:
@@ -34,6 +34,7 @@ def add_student():
 
     students_first_name = data['students_first_name']
     students_last_name = data['students_last_name']
+    students_email = data['students_email']
     students_user_id = data['students_user_id']
     students_dni = data['students_dni']
     students_address = data['students_address']
@@ -48,7 +49,7 @@ def add_student():
         return jsonify({'error': 'El estudiante ya existe'}), 400
 
     new_student = Student(
-        students_first_name=students_first_name, students_last_name=students_last_name, students_user_id=students_user_id,
+        students_first_name=students_first_name, students_last_name=students_last_name, students_email=students_email, students_user_id=students_user_id,
         students_dni = students_dni, students_address = students_address, students_city = students_city, students_postal = students_postal,
         students_number_card = students_number_card, students_exp_date = students_exp_date, students_cvc = students_cvc
     )
@@ -99,13 +100,12 @@ def get_student(id):
     if student is None:
         return jsonify({'message': 'Student not found'}), 404
 
-    enrollments = Enrollment.query.filter_by(enrollments_student_id = id). all()
-    courses = [Course.query.get(enrollment.enrollments_course_id) for enrollment in enrollments]
 
-    student_schema_with_courses = {
+    student_schema = {
         'students_id': student.students_id,
         'students_first_name': student.students_first_name,
         'students_last_name': student.students_last_name,
+        'students_email': student.students_email,
         'students_user_id': student.students_user_id,
         'students_dni': student.students_dni,
         'students_address': student.students_address,
@@ -113,19 +113,10 @@ def get_student(id):
         'students_postal': student.students_postal,
         'students_number_card': student.students_number_card,
         'students_exp_date': student.students_exp_date,
-        'students_cvc': student.students_cvc,
-        'courses': [{'courses_id': course.courses_id,
-                     'courses_title': course.courses_title,
-                     'courses_content': course.courses_content,
-                     'courses_image': course.courses_image,
-                     'courses_price': course.courses_price,
-                     'courses_discounted_price': course.courses_discounted_price,
-                     'courses_professor_id': course.courses_professor_id,
-                     'courses_studycenter_id': course.courses_studycenter_id}
-                    for course in courses]
+        'students_cvc': student.students_cvc 
     }
 
-    return jsonify(student_schema_with_courses)
+    return jsonify(student_schema)
 
 @bp.route("/student/<id>", methods=["PUT"])
 def update_student(id):
@@ -144,6 +135,7 @@ def update_student(id):
     data = request.json
     student.students_first_name = data.get('students_first_name', student.students_first_name)
     student.students_last_name = data.get('students_last_name', student.students_last_name)
+    student.students_email = data.get('students_email', student.students_email)
     student.students_user_id = data.get('students_user_id', student.students_user_id)
     student.students_dni = data.get('students_dni', student.students_dni)
     student.students_address = data.get('students_address', student.students_address)
@@ -156,6 +148,63 @@ def update_student(id):
     db.session.commit()
 
     return jsonify(student_schema.dump(student))
+
+@bp.route("/courses/student/<student_id>", methods=["GET"])
+def get_student_with_courses(student_id):
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
+    student = Student.query.get(student_id)
+    print(f"Retrieved student: {student}")
+    if student is None:
+        return jsonify({'message': 'Student not found'}), 404
+
+    enrollments = Enrollment.query.filter_by(enrollments_student_id = student_id). all()
+
+    courses_with_enrollments = []
+
+    for enrollment in enrollments:
+        course = Course.query.get(enrollment.enrollments_course_id)
+        courses_with_enrollments.append({
+            'course_id': course.courses_id,
+            'course_title': course.courses_title,
+            'course_content': course.courses_content,
+            'course_image': course.courses_image,
+            'course_price': course.courses_price,
+            'course_discounted_price': course.courses_discounted_price,
+            'course_professor_id': course.courses_professor_id,
+            'course_studycenter_id': course.courses_studycenter_id,
+            'enrollment_id': enrollment.enrollments_id,
+            'enrollment_start_date': enrollment.enrollments_start_date,
+            'enrollment_end_date': enrollment.enrollments_end_date,
+            'enrollments_finalized': enrollment.enrollments_finalized
+        })
+
+    student_schema_with_courses = {
+        'student': { 
+            'students_id': student.students_id,
+            'students_first_name': student.students_first_name,
+            'students_last_name': student.students_last_name,
+            'students_email': student.students_email,
+            'students_user_id': student.students_user_id,
+            'students_dni': student.students_dni,
+            'students_address': student.students_address,
+            'students_city': student.students_city,
+            'students_postal': student.students_postal,
+            'students_number_card': student.students_number_card,
+            'students_exp_date': student.students_exp_date,
+            'students_cvc': student.students_cvc
+        },
+        'courses': courses_with_enrollments
+    }
+
+    return jsonify(student_schema_with_courses)
+  
+
 
 @bp.route("/student/<id>", methods=["DELETE"])
 def delete_student(id):

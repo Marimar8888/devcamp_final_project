@@ -23,7 +23,7 @@ def add_enrollment():
         
     data = request.json
 
-    required_fields = ['enrollments_student_id', 'enrollments_course_id', 'enrollments_start_date', 'enrollments_end_date']
+    required_fields = ['enrollments_student_id', 'enrollments_course_id', 'enrollments_start_date', 'enrollments_end_date', 'enrollments_finalized']
     for field in required_fields:
         if field not in data:
             return jsonify({'error': f'Campo {field} es obligatorio'}), 400
@@ -32,6 +32,7 @@ def add_enrollment():
     enrollments_course_id = data['enrollments_course_id']
     enrollments_start_date = data['enrollments_start_date']
     enrollments_end_date = data['enrollments_end_date']
+    enrollments_finalized = data['enrollments_finalized']
 
     student = Student.query.get(enrollments_student_id)
     course = Course.query.get(enrollments_course_id)
@@ -117,6 +118,7 @@ def update_enrollment(id):
     enrollment.enrollments_course_id = data.get('enrollments_course_id', enrollment.enrollments_course_id)
     enrollment.enrollments_start_date = data.get('enrollments_start_date', enrollment.enrollments_start_date)
     enrollment.enrollments_end_date = data.get('enrollments_end_date', enrollment.enrollments_end_date)
+    enrollment.enrollments_finalized = data.get('enrollments_finalized', enrollment.enrollments_finalized)
     db.session.commit()
 
     return enrollment_schema.jsonify(enrollment)
