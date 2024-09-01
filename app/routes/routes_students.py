@@ -170,14 +170,14 @@ def get_student_with_courses(student_id):
     for enrollment in enrollments:
         course = Course.query.get(enrollment.enrollments_course_id)
         courses_with_enrollments.append({
-            'course_id': course.courses_id,
-            'course_title': course.courses_title,
-            'course_content': course.courses_content,
-            'course_image': course.courses_image,
-            'course_price': course.courses_price,
-            'course_discounted_price': course.courses_discounted_price,
-            'course_professor_id': course.courses_professor_id,
-            'course_studycenter_id': course.courses_studycenter_id,
+            'courses_id': course.courses_id,
+            'courses_title': course.courses_title,
+            'courses_content': course.courses_content,
+            'courses_image': course.courses_image,
+            'courses_price': course.courses_price,
+            'courses_discounted_price': course.courses_discounted_price,
+            'courses_professor_id': course.courses_professor_id,
+            'courses_studycenter_id': course.courses_studycenter_id,
             'enrollment_id': enrollment.enrollments_id,
             'enrollment_start_date': enrollment.enrollments_start_date,
             'enrollment_end_date': enrollment.enrollments_end_date,
@@ -204,8 +204,6 @@ def get_student_with_courses(student_id):
 
     return jsonify(student_schema_with_courses)
   
-
-
 @bp.route("/student/<id>", methods=["DELETE"])
 def delete_student(id):
     
