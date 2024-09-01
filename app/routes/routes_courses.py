@@ -28,6 +28,7 @@ def add_course():
     courses_professor_id = request.form.get('courses_professor_id')
     courses_studycenter_id = request.form.get('courses_studycenter_id')
     courses_category_id = request.form.get('courses_category_id')
+    courses_active = request.form.get('courses_active')
 
     upload_folder = current_app.config['UPLOAD_FOLDER']
     if courses_image_file and courses_image_file.filename:
@@ -51,7 +52,8 @@ def add_course():
         courses_discounted_price=courses_discounted_price,
         courses_professor_id=courses_professor_id,
         courses_studycenter_id=courses_studycenter_id,
-        courses_category_id=courses_category_id
+        courses_category_id=courses_category_id,
+       courses_active = courses_active
     )
 
     db.session.add(new_course)
@@ -107,6 +109,7 @@ def update_course(id):
     course.courses_professor_id = data.get('courses_professor_id', course.courses_professor_id)
     course.courses_studycenter_id = data.get('courses_studycenter_id', course.courses_studycenter_id)
     course.courses_category_id = data.get('courses_category_id', course.courses_category_id)
+    course.courses_active = data.get('courses_active', course.courses_active)
 
     db.session.commit()
 
@@ -143,6 +146,8 @@ def updatePatch_course(id):
         course.courses_studycenter_id = data['courses_studycenter_id']
     if 'courses_category_id' in data:
         course.courses_category_id = data['courses_category_id']
+    if 'courses_active' in data:
+        course.courses_active = data['courses_active']
 
     if 'courses_image' in data:
         if data['courses_image'] is None and course.courses_image:

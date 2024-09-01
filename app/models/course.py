@@ -13,6 +13,7 @@ class Course(db.Model):
     courses_professor_id = db.Column(db.Integer, db.ForeignKey('professors.professors_id'))
     courses_studycenter_id = db.Column(db.Integer, db.ForeignKey('studycenters.studyCenters_id'))
     courses_category_id = db.Column(db.Integer, db.ForeignKey('categories.categories_id'))
+    courses_active = db.Column(db.Boolean, default=True)
 
     professor = db.relationship('Professor', backref=db.backref('courses', lazy='dynamic'))
     enrollments = db.relationship('Enrollment',  back_populates='course')  
@@ -20,7 +21,9 @@ class Course(db.Model):
     category = relationship('Category', back_populates='courses',  foreign_keys=[courses_category_id])
 
     
-    def __init__(self, courses_title, courses_content, courses_image, courses_price, courses_discounted_price, courses_professor_id, courses_studycenter_id, courses_category_id):
+    def __init__(
+        self, courses_title, courses_content, courses_image, courses_price, courses_discounted_price, courses_professor_id, 
+        courses_studycenter_id, courses_category_id, courses_active):
         self.courses_title = courses_title
         self.courses_content = courses_content
         self.courses_image = courses_image
@@ -29,3 +32,4 @@ class Course(db.Model):
         self.courses_professor_id = courses_professor_id
         self.courses_studycenter_id = courses_studycenter_id
         self.courses_category_id = courses_category_id
+        self.courses_active = courses_active
