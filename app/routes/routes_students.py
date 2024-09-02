@@ -118,39 +118,8 @@ def get_student(id):
 
     return jsonify(student_schema)
 
-@bp.route("/student/<id>", methods=["PUT"])
-def update_student(id):
-    
-    auth_header = request.headers.get('Authorization')
-    try:
-        decoded_token = decode_token(auth_header)
-    except ValueError as e:
-        return jsonify({'error': str(e)}), 401
-
-    student = Student.query.get(id)
-
-    if student is None:
-        return jsonify({'message': 'Student not found'}), 404
-
-    data = request.json
-    student.students_first_name = data.get('students_first_name', student.students_first_name)
-    student.students_last_name = data.get('students_last_name', student.students_last_name)
-    student.students_email = data.get('students_email', student.students_email)
-    student.students_user_id = data.get('students_user_id', student.students_user_id)
-    student.students_dni = data.get('students_dni', student.students_dni)
-    student.students_address = data.get('students_address', student.students_address)
-    student.students_city = data.get('students_city', student.students_city)
-    student.students_postal = data.get('students_postal', student.students_postal)
-    student.students_number_card = data.get('students_number_card', student.students_number_card)
-    student.students_exp_date = data.get('students_exp_date', student.students_exp_date)
-    student.students_cvc = data.get('students_cvc', student.students_cvc)
-
-    db.session.commit()
-
-    return jsonify(student_schema.dump(student))
-
 @bp.route("/student/<id>", methods=["PATCH"])
-def update_patch_student(id):
+def update_student(id):
     auth_header = request.headers.get('Authorization')
     try:
         decoded_token = decode_token(auth_header)
@@ -162,7 +131,7 @@ def update_patch_student(id):
     if student is None:
         return jsonify({'message': 'Student not found'}), 404
 
-    data = request.json
+    data = request.form
 
     if 'students_first_name' in data:
         student.students_first_name = data['students_first_name']
