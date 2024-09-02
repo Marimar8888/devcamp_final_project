@@ -170,7 +170,6 @@ def get_student_with_courses(student_id):
         return jsonify({'error': str(e)}), 401
 
     student = Student.query.get(student_id)
-    print(f"Retrieved student: {student}")
     if student is None:
         return jsonify({'message': 'Student not found'}), 404
 

@@ -131,7 +131,42 @@ def get_professor(id):
     if professor is None:
         return jsonify({'message': 'Professor not found'}), 404
 
-    result = professor_schema.dump(professor)
+    result = professor_basic_schema.dump(professor)
+
+    return jsonify(result)
+
+@bp.route("/all_dates/professor/<id>", methods=["GET"])
+def get_all_dates_professor(id):
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
+    professor = Professor.query.get(id)
+
+    if professor is None:
+        return jsonify({'message': 'Professor not found'}), 404
+
+    professor_schema = {
+        'professor': { 
+            'professors_id': professor.professors_id,
+            'professors_first_name': professor.professors_first_name,
+            'professors_last_name': professor.professors_last_name,
+            'professors_email': professor.professors_email,
+            'professors_user_id': professor.professors_user_id,
+            'professors_dni': professor.professors_dni,
+            'professors_address': professor.professors_address,
+            'professors_city': professor.professors_city,
+            'professors_postal': professor.professors_postal,
+            'professors_number_card': professor.professors_number_card,
+            'professors_exp_date': professor.professors_exp_date,
+            'professors_cvc': professor.professors_cvc
+        }
+    }
+
+    result = professor_schema
 
     professor_students = ProfessorStudent.query.filter_by(professor_student_professor_id=id).all()
     student_ids = [ps.professor_student_student_id for ps in professor_students]
@@ -151,9 +186,7 @@ def get_professor(id):
 
     return jsonify(result)
 
-
-
-@bp.route("/professor/<id>", methods=["PUT"])
+@bp.route("/professor/<id>", methods=["PATCH"])
 def update_professor(id):
 
     auth_header = request.headers.get('Authorization')
@@ -167,18 +200,29 @@ def update_professor(id):
     if professor is None:
         return jsonify({'message': 'Professor not found'}), 404
 
-    data = request.json
-    professor.professors_first_name = data.get('professors_first_name', professor.professors_first_name)
-    professor.professors_last_name = data.get('professors_last_name', professor.professors_last_name)
-    professor.professors_email = data.get('professors_email', professor.professors_email)
-    professor.professors_user_id = data.get('professors_user_id', professor.professors_user_id)
-    professor.professors_dni = data.get('professors_dni', professor.professors_dni)
-    professor.professors_address = data.get('professors_address', professor.professors_address)
-    professor.professors_city = data.get('professors_city', professor.professors_city)
-    professor.professors_postal = data.get('professors_postal', professor.professors_postal)
-    professor.professors_number_card = data.get('professors_number_card', professor.professors_number_card)
-    professor.professors_exp_date = data.get('professors_exp_date', professor.professors_exp_date)
-    professor.professors_cvc = data.get('professors_cvc', professor.professors_cvc)
+    data = request.form
+    if 'professors_first_name' in data:
+        professor.professors_first_name = data['professors_first_name']
+    if 'professors_last_name' in data:
+        professor.professors_last_name = data['professors_last_name']
+    if 'professors_email' in data:
+        professor.professors_email = data['professors_email']
+    if 'professors_user_id' in data:
+        professor.professors_user_id = data['professors_user_id']
+    if 'professors_dni' in data:    
+        professor.professors_dni = data['professors_dni']
+    if 'professors_address' in data:
+        professor.professors_address = data['professors_address']
+    if 'professors_city' in data:
+        professor.professors_city = data['professors_city']
+    if 'professors_postal' in data:
+        professor.professors_postal = data['professors_postal']
+    if 'professors_number_card' in data:
+        professor.professors_number_card = data['professors_number_card']
+    if 'professors_exp_date' in data:
+        professor.professors_exp_date = data['professors_exp_date']
+    if 'professors_cvc' in data:
+        professor.professors_cvc = data['professors_cvc']
 
     db.session.commit()
 
