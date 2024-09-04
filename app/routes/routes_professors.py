@@ -38,7 +38,7 @@ def add_professor():
     except ValueError as e:
         return jsonify({'error': str(e)}), 401
 
-    data = request.json
+    data = request.form
 
     required_fields = [
         'professors_first_name', 'professors_last_name', 'professors_email', 'professors_user_id', 'professors_dni', 'professors_address', 
