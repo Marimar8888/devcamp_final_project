@@ -89,12 +89,23 @@ def get_course(id):
 
 @bp.route("/store/courses/<categoryId>", methods=["GET"])
 def get_courses_by_category(categoryId):
-    courses = Course.query.filter_by(courses_category_id=categoryId).all()
+    page = request.args.get('page', 1, type=int)  
+    limit = request.args.get('limit', 10, type=int)  
 
-    if not courses:
-        return jsonify({'message': 'Courses not found'}), 404
+    paginated_courses = Course.query.filter_by(courses_category_id=categoryId).paginate(
+        page=page, per_page=limit, error_out=False
+    )
+    if not paginated_courses:
+         return jsonify({'message': 'Courses not found'}), 404
 
-    return course_schema.jsonify(courses, many=True)
+    result = courses_schema.dump(paginated_courses.items)
+
+    return jsonify({
+        'courses': result,  
+        'total': paginated_courses.total, 
+        'page': page,  
+        'pages': paginated_courses.pages  
+    })
 
 @bp.route("/course/<id>", methods=["PUT"])
 def update_course(id):
