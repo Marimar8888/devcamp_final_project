@@ -53,7 +53,7 @@ def add_course():
         courses_professor_id=courses_professor_id,
         courses_studycenter_id=courses_studycenter_id,
         courses_category_id=courses_category_id,
-       courses_active = courses_active
+        courses_active = courses_active
     )
 
     db.session.add(new_course)
@@ -61,12 +61,22 @@ def add_course():
     course = Course.query.get(new_course.courses_id)
     return course_schema.jsonify(course)
 
+
 @bp.route('/courses', methods=["GET"])
 def all_courses():
-    all_courses = Course.query.all()
-    result = courses_schema.dump(all_courses)
+    page = request.args.get('page', 1, type=int)  
+    limit = request.args.get('limit', 10, type=int)  
+
+    paginated_courses = Course.query.paginate(page=page, per_page=limit, error_out=False)
+
+    result = courses_schema.dump(paginated_courses.items)  
     
-    return jsonify(result)
+    return jsonify({
+        'courses': result,
+        'total': paginated_courses.total,  
+        'page': page,
+        'pages': paginated_courses.pages 
+    })
 
 @bp.route("/course/<id>", methods=["GET"])
 def get_course(id):

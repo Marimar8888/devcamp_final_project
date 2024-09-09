@@ -6,13 +6,13 @@ class Course(db.Model):
     __tablename__ = 'courses'
     courses_id = db.Column(db.Integer, primary_key=True)
     courses_title = db.Column(db.String(144), unique=False)
-    courses_content = db.Column(db.String(500), unique=False, nullable=True)
+    courses_content = db.Column(db.String(1000), unique=False, nullable=True)
     courses_image = db.Column(db.String(255), unique=False, nullable=True)
     courses_price = db.Column(Numeric(10, 2), unique=False)
     courses_discounted_price = db.Column(Numeric(10, 2), unique=False, nullable=True)
     courses_professor_id = db.Column(db.Integer, db.ForeignKey('professors.professors_id'))
-    courses_studycenter_id = db.Column(db.Integer, db.ForeignKey('studycenters.studyCenters_id'))
-    courses_category_id = db.Column(db.Integer, db.ForeignKey('categories.categories_id'))
+    courses_studycenter_id = db.Column(db.Integer, db.ForeignKey('studycenters.studyCenters_id'), nullable=True)
+    courses_category_id = db.Column(db.Integer, db.ForeignKey('categories.categories_id'), nullable=False)
     courses_active = db.Column(db.Boolean, default=True)
 
     professor = db.relationship('Professor', backref=db.backref('courses', lazy='dynamic'))
