@@ -96,7 +96,7 @@ def get_enrollment(id):
     if enrollment is None:
         return jsonify({'message': 'Enrollment not found'}), 404
     
-    return enrollment_schema.jsonify(enrollment)
+    return enrollment_schema.jsonify(enrollment), 200
 
 @bp.route('/enrollment/<id>', methods=["PUT"])
 def update_enrollment(id):
