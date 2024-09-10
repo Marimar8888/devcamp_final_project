@@ -37,7 +37,10 @@ def add_studycenter():
 
     data = request.json
 
-    required_fields = ['studyCenters_name', 'studyCenters_email', 'studyCenters_user_id']
+    required_fields = [
+        'studyCenters_name', 'studyCenters_email', 'studyCenters_user_id', 'studyCenters_cif',
+        'studyCenters_address','studyCenters_city', 'studyCenters_postal', 'studyCenters_number_card',
+        'studyCenters_exp_date', 'studyCenters_cvc', 'studyCenters_active']
     for field in required_fields:
         if field not in data:
             return jsonify({'error': f'Campo {field} es obligatorio'}), 400
@@ -45,6 +48,14 @@ def add_studycenter():
     studyCenters_name = data['studyCenters_name']
     studyCenters_email = data['studyCenters_email']
     studyCenters_user_id = data ['studyCenters_user_id']
+    studyCenters_cif = data ['studyCenters_cif']
+    studyCenters_address = data ['studyCenters_address']
+    studyCenters_city = data ['studyCenters_city']
+    studyCenters_postal = data ['studyCenters_postal']
+    studyCenters_number_card = data ['studyCenters_number_card']
+    studyCenters_exp_date = data ['studyCenters_exp_date']
+    studyCenters_cvc = data ['studyCenters_cvc']
+    studyCenters_active = data ['studyCenters_active']
 
     existing_user = StudyCenter.query.filter_by(studyCenters_email=studyCenters_email).first()
     if existing_user:
@@ -53,18 +64,32 @@ def add_studycenter():
     new_center =  StudyCenter( 
         studyCenters_name= studyCenters_name, 
         studyCenters_email= studyCenters_email, 
-        studyCenters_user_id = studyCenters_user_id
+        studyCenters_user_id = studyCenters_user_id,
+        studyCenters_cif = studyCenters_cif,
+        studyCenters_address = studyCenters_address,
+        studyCenters_city = studyCenters_city,
+        studyCenters_postal = studyCenters_postal,
+        studyCenters_number_card = studyCenters_number_card,
+        studyCenters_exp_date = studyCenters_exp_date,
+        studyCenters_cvc = studyCenters_cvc,
+        studyCenters_active = studyCenters_active,
     )
     
     try:
         db.session.add(new_center)
         db.session.commit()
+
         center_rol = Rol.query.get(4)
         if center_rol is None:
             return jsonify({'error': 'Rol not found'}), 404
-        center_rol_entry = UserRol(user_id=new_center.studyCenters_user_id, rol_id=center_rol.rols_id)
-        db.session.add(center_rol_entry) 
-        db.session.commit()
+
+        existing_role_entry = UserRol.query.filter_by(user_id=new_center.studyCenters_user_id, rol_id=center_rol.rols_id).first()
+    
+        if not existing_role_entry:
+            center_rol_entry = UserRol(user_id=new_center.studyCenters_user_id, rol_id=center_rol.rols_id)
+            db.session.add(center_rol_entry)
+            db.session.commit()
+ 
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': 'No se pudo agregar el centro de estudios', 'details': str(e)}), 500
@@ -135,7 +160,7 @@ def get_studycenter_by_userId(user_id):
     return jsonify(result)
 
 
-@bp.route("/studycenter/<id>", methods=["PUT"])
+@bp.route("/studycenter/<id>", methods=["PATCH"])
 def update_studycenter(id):
 
     auth_header = request.headers.get('Authorization')
@@ -150,13 +175,32 @@ def update_studycenter(id):
         return jsonify({'message': 'StudyCenter not found'}), 404
 
     data = request.json
-    studyCenter.studyCenters_name = data.get('studyCenters_name', studyCenter.studyCenters_name)
-    studyCenter.studyCenters_email = data.get('studyCenters_email', studyCenter.studyCenters_email)
-    studyCenter.studyCenters_user_id = data.get('studyCenters_user_id', studyCenter.studyCenters_user_id)
- 
+    if 'studyCenters_name' in data:
+        studyCenter.studyCenters_name = data['studyCenters_name']
+    if 'studyCenters_email' in data:
+        studyCenter.studyCenters_email = data['studyCenters_email']
+    if 'studyCenters_user_id' in data:
+        studyCenter.studyCenters_user_id = data['studyCenters_user_id']
+    if 'studyCenters_cif' in data:
+        studyCenter.studyCenters_cif = data['studyCenters_cif']
+    if 'studyCenters_address' in data:
+        studyCenter.studyCenters_address = data['studyCenters_address']
+    if 'studyCenters_city' in data:
+        studyCenter.studyCenters_city = data['studyCenters_city']
+    if 'studyCenters_postal' in data:
+        studyCenter.studyCenters_postal = data['studyCenters_postal']
+    if 'studyCenters_number_card' in data:
+        studyCenter.studyCenters_number_card = data['studyCenters_number_card']
+    if 'studyCenters_exp_date' in data:
+        studyCenter.studyCenters_exp_date = data['studyCenters_exp_date']
+    if 'studyCenters_cvc' in data:
+        studyCenter.studyCenters_cvc = data['studyCenters_cvc']
+    if 'studyCenters_active' in data:
+        studyCenter.studyCenters_active = data['studyCenters_active']
+
     db.session.commit()
 
-    return studyCenter_schema.jsonify(studyCenter)
+    return studyCenter_detail_schema.jsonify(studyCenter)
 
 @bp.route("/studycenter/<id>", methods=["DELETE"])
 def delete_studycenter(id):
