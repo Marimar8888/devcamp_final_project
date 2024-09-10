@@ -81,3 +81,23 @@ def get_favorites_by_user_id(user_id):
     print(f"Datos serializados: {serialized_data}")
 
     return jsonify(serialized_data), 200
+
+@bp.route('/favorite/<int:user_id>/<int:course_id>', methods=['DELETE'])
+def delete_favorite_by_user_id(user_id, course_id):
+
+    auth_header = request.headers.get('Authorization')
+
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
+    favorite = Favorite.query.filter_by(favorites_user_id=user_id, favorites_course_id=course_id).first()
+
+    if not favorite:
+        return jsonify({'message': 'Favorite not found'}), 404
+    
+    db.session.delete(favorite)
+    db.session.commit()
+
+    return jsonify({'message': 'Favorite deleted successfully'}), 200
