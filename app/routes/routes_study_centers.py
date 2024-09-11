@@ -35,12 +35,13 @@ def add_studycenter():
     except ValueError as e:
         return jsonify({'error': str(e)}), 401
 
-    data = request.json
+    data = request.form
 
     required_fields = [
         'studyCenters_name', 'studyCenters_email', 'studyCenters_user_id', 'studyCenters_cif',
         'studyCenters_address','studyCenters_city', 'studyCenters_postal', 'studyCenters_number_card',
-        'studyCenters_exp_date', 'studyCenters_cvc', 'studyCenters_active']
+        'studyCenters_exp_date', 'studyCenters_cvc'
+    ]
     for field in required_fields:
         if field not in data:
             return jsonify({'error': f'Campo {field} es obligatorio'}), 400
@@ -55,13 +56,12 @@ def add_studycenter():
     studyCenters_number_card = data ['studyCenters_number_card']
     studyCenters_exp_date = data ['studyCenters_exp_date']
     studyCenters_cvc = data ['studyCenters_cvc']
-    studyCenters_active = data ['studyCenters_active']
 
     existing_user = StudyCenter.query.filter_by(studyCenters_email=studyCenters_email).first()
     if existing_user:
         return jsonify({'error': 'El email ya está en uso'}), 400
 
-    new_center =  StudyCenter( 
+    new_center =StudyCenter( 
         studyCenters_name= studyCenters_name, 
         studyCenters_email= studyCenters_email, 
         studyCenters_user_id = studyCenters_user_id,
@@ -71,8 +71,7 @@ def add_studycenter():
         studyCenters_postal = studyCenters_postal,
         studyCenters_number_card = studyCenters_number_card,
         studyCenters_exp_date = studyCenters_exp_date,
-        studyCenters_cvc = studyCenters_cvc,
-        studyCenters_active = studyCenters_active,
+        studyCenters_cvc = studyCenters_cvc
     )
     
     try:
@@ -89,7 +88,6 @@ def add_studycenter():
             center_rol_entry = UserRol(user_id=new_center.studyCenters_user_id, rol_id=center_rol.rols_id)
             db.session.add(center_rol_entry)
             db.session.commit()
- 
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': 'No se pudo agregar el centro de estudios', 'details': str(e)}), 500

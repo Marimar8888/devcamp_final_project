@@ -15,13 +15,13 @@ class StudyCenter(db.Model):
     studyCenters_number_card = db.Column(db.String(16), nullable=False)
     studyCenters_exp_date = db.Column(db.String(5), nullable=False)
     studyCenters_cvc = db.Column(db.Integer, nullable=False)
-    studyCenters_active = db.Column(db.Boolean, default=True)
+    studyCenters_active = db.Column(db.Boolean, default=True, nullable=True)
 
     studycenter_students= relationship('StudyCenterStudent', back_populates='studyCenter')
 
     def __init__(
         self, studyCenters_name, studyCenters_email, studyCenters_user_id, studyCenters_address, studyCenters_city,
-        studyCenters_postal, studyCenters_number_card, studyCenters_exp_date, studyCenters_cvc, studyCenters_cif, studyCenters_active):
+        studyCenters_postal, studyCenters_number_card, studyCenters_exp_date, studyCenters_cvc, studyCenters_cif, studyCenters_active=True):
         self.studyCenters_name = studyCenters_name
         self.studyCenters_email =  studyCenters_email
         self.studyCenters_user_id = studyCenters_user_id

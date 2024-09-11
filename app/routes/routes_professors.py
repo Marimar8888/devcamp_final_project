@@ -65,9 +65,16 @@ def add_professor():
         return jsonify({'error': 'El email ya está en uso'}), 400
 
     new_professor =Professor(
-        professors_first_name=professors_first_name, professors_last_name=professors_last_name, professors_email=professors_email, professors_user_id=professors_user_id,
-        professors_dni = professors_dni, professors_address = professors_address, professors_city = professors_city,
-        professors_postal = professors_postal, professors_number_card = professors_number_card, professors_exp_date = professors_exp_date,
+        professors_first_name=professors_first_name, 
+        professors_last_name=professors_last_name, 
+        professors_email=professors_email, 
+        professors_user_id=professors_user_id,
+        professors_dni = professors_dni, 
+        professors_address = professors_address, 
+        professors_city = professors_city,
+        professors_postal = professors_postal, 
+        professors_number_card = professors_number_card, 
+        professors_exp_date = professors_exp_date,
         professors_cvc = professors_cvc
     )
     
