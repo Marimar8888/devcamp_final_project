@@ -22,7 +22,7 @@ def add_student():
     except ValueError as e:
         return jsonify({'error': str(e)}), 401
     
-    data = request.json
+    data = request.form
 
     required_fields = [
         'students_first_name', 'students_last_name', 'students_email', 'students_user_id', 'students_dni', 'students_address',
@@ -250,3 +250,19 @@ def get_student_by_user_id(user_id):
         return jsonify({'message': 'Student not found'}), 404
 
     return jsonify({'students_id': student.students_id})
+
+@bp.route("/student/userId/<user_id>", methods=["GET"])
+def get_student_dates_by_user_id(user_id):
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
+    student = Student.query.filter_by(students_user_id=user_id).first()
+
+    if student is None:
+        return jsonify({'message': 'Student not found'}), 404
+
+    return jsonify(student_schema.dump(student))

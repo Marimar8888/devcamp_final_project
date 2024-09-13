@@ -3,6 +3,7 @@ from app.models import Student, Course, Enrollment
 from app.schema.enrollment_schema import EnrollmentSchema
 from app.config import Config
 from app.utils.token_manager import decode_token, encode_token
+from datetime import datetime
 
 from app import db
 
@@ -21,18 +22,18 @@ def add_enrollment():
     except ValueError as e:
         return jsonify({'error': str(e)}), 401
         
-    data = request.json
+    data = request.form 
 
-    required_fields = ['enrollments_student_id', 'enrollments_course_id', 'enrollments_start_date', 'enrollments_end_date', 'enrollments_finalized']
+    required_fields = ['enrollments_student_id', 'enrollments_course_id', 'enrollments_start_date', 'enrollments_end_date']
     for field in required_fields:
         if field not in data:
             return jsonify({'error': f'Campo {field} es obligatorio'}), 400
+
+    enrollments_student_id = data.get('enrollments_student_id')
+    enrollments_course_id = data.get('enrollments_course_id')
     
-    enrollments_student_id = data['enrollments_student_id']
-    enrollments_course_id = data['enrollments_course_id']
-    enrollments_start_date = data['enrollments_start_date']
-    enrollments_end_date = data['enrollments_end_date']
-    enrollments_finalized = data['enrollments_finalized']
+    enrollments_start_date = datetime.strptime(data['enrollments_start_date'], '%Y-%m-%d %H:%M:%S')
+    enrollments_end_date = datetime.strptime(data['enrollments_end_date'], '%Y-%m-%d %H:%M:%S')
 
     student = Student.query.get(enrollments_student_id)
     course = Course.query.get(enrollments_course_id)
@@ -52,11 +53,11 @@ def add_enrollment():
         return jsonify({'error': 'Ya has realizado este curso'}), 400
     
     new_relationship = Enrollment(
-         enrollments_student_id = enrollments_student_id, 
-         enrollments_course_id =  enrollments_course_id,
-         enrollments_start_date = enrollments_start_date,
-         enrollments_end_date = enrollments_end_date
-        )
+        enrollments_student_id = enrollments_student_id, 
+        enrollments_course_id =  enrollments_course_id,
+        enrollments_start_date = enrollments_start_date,
+        enrollments_end_date = enrollments_end_date
+    )
 
     try:
         db.session.add( new_relationship)

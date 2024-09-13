@@ -13,8 +13,9 @@ class Enrollment(db.Model):
     student = db.relationship('Student', back_populates='enrollments')  
     course = db.relationship('Course', back_populates='enrollments')
 
-    def __init__(self, enrollments_student_id, enrollments_course_id, enrollments_start_date, enrollments_end_date):
+    def __init__(self, enrollments_student_id, enrollments_course_id, enrollments_start_date, enrollments_end_date, enrollments_finalized=False):
         self.enrollments_student_id = enrollments_student_id
         self.enrollments_course_id = enrollments_course_id
         self.enrollments_start_date = enrollments_start_date
         self.enrollments_end_date = enrollments_end_date
+        self.enrollments_finalized = enrollments_finalized
