@@ -24,50 +24,69 @@ def add_enrollment():
         
     data = request.form 
 
-    required_fields = ['enrollments_student_id', 'enrollments_course_id', 'enrollments_start_date', 'enrollments_end_date']
+    required_fields = ['enrollments_student_id', 'enrollments_course_ids', 'enrollments_start_date', 'enrollments_end_date']
     for field in required_fields:
         if field not in data:
             return jsonify({'error': f'Campo {field} es obligatorio'}), 400
 
     enrollments_student_id = data.get('enrollments_student_id')
-    enrollments_course_id = data.get('enrollments_course_id')
-    
+    enrollments_course_ids = request.form.getlist('enrollments_course_ids') 
     enrollments_start_date = datetime.strptime(data['enrollments_start_date'], '%Y-%m-%d %H:%M:%S')
     enrollments_end_date = datetime.strptime(data['enrollments_end_date'], '%Y-%m-%d %H:%M:%S')
 
     student = Student.query.get(enrollments_student_id)
-    course = Course.query.get(enrollments_course_id)
 
     if not student:
         return jsonify({'error': 'Student not found'}), 404
-    
-    if not course:
-        return jsonify({'error': 'Course not found'}), 404
-    
-    existing_relationship = Enrollment.query.filter_by(
-        enrollments_student_id = enrollments_student_id, 
-        enrollments_course_id =  enrollments_course_id
-    ).first()
 
-    if existing_relationship:
-        return jsonify({'error': 'Ya has realizado este curso'}), 400
-    
-    new_relationship = Enrollment(
-        enrollments_student_id = enrollments_student_id, 
-        enrollments_course_id =  enrollments_course_id,
-        enrollments_start_date = enrollments_start_date,
-        enrollments_end_date = enrollments_end_date
-    )
+    if not enrollments_course_ids:
+        return jsonify({'error': 'Debe proporcionar al menos un curso'}), 400
 
-    try:
-        db.session.add( new_relationship)
-        db.session.commit()
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': 'No se puede matricular en este curso', 'details': str(e)}), 500
-    
-    return jsonify({'message': 'Contratación del curso exitosa'}), 201
-    
+    successful_enrollments = []
+    errors = []
+
+    for course_id in enrollments_course_ids:
+        course = Course.query.get(course_id)
+
+        if not course:
+            errors.append(f'Course with id {course_id} not found')
+            continue
+
+        existing_relationship = Enrollment.query.filter_by(
+            enrollments_student_id = enrollments_student_id, 
+            enrollments_course_id = course_id
+        ).first()
+
+        if existing_relationship:
+            errors.append(f'Ya estás inscrito en el curso con id {course_id}')
+            continue
+
+        new_relationship = Enrollment(
+            enrollments_student_id = enrollments_student_id, 
+            enrollments_course_id = course_id,
+            enrollments_start_date = enrollments_start_date,
+            enrollments_end_date = enrollments_end_date
+        )
+
+        try:
+            db.session.add(new_relationship)
+            db.session.commit()
+            successful_enrollments.append(course_id)
+        except Exception as e:
+            db.session.rollback()
+            errors.append(f'Error al matricularse en el curso con id {course_id}: {str(e)}')
+
+    if successful_enrollments:
+        message = {
+            'message': 'Contratación exitosa de los cursos',
+            'successful_enrollments': successful_enrollments
+        }
+        if errors:
+            message['errors'] = errors
+        return jsonify(message), 201
+    else:
+        return jsonify({'error': 'No se pudo matricular en ningún curso', 'details': errors}), 400
+   
 @bp.route('/enrollments', methods=["GET"])
 def all_enrollments():
 
