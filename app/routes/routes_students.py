@@ -236,7 +236,7 @@ def delete_student(id):
 
 
 @bp.route("/student/user_id/<user_id>", methods=["GET"])
-def get_student_by_user_id(user_id):
+def get_student_id_by_user_id(user_id):
 
     auth_header = request.headers.get('Authorization')
     try:
