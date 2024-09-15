@@ -109,7 +109,7 @@ def all_professors():
     return jsonify(resul)
 
 @bp.route("/professor/user_id/<user_id>", methods=["GET"])
-def get_professor_by_user_id(user_id):
+def get_professor_id_by_user_id(user_id):
 
     auth_header = request.headers.get('Authorization')
     try:
@@ -123,6 +123,22 @@ def get_professor_by_user_id(user_id):
         return jsonify({'message': 'Professor not found'}), 404
 
     return jsonify({'professors_id': professor.professors_id})
+
+@bp.route("/professor/userId/<user_id>", methods=["GET"])
+def get_professor_by_user_id(user_id):
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
+    professor = Professor.query.filter_by(professors_user_id=user_id).first()
+
+    if professor is None:
+        return jsonify({'message': 'Professor not found'}), 404
+
+    return jsonify(professor_schema.dump(professor))
 
 @bp.route("/professor/<id>", methods=["GET"])
 def get_professor(id):
