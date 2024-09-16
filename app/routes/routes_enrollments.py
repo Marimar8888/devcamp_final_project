@@ -4,6 +4,7 @@ from app.schema.enrollment_schema import EnrollmentSchema
 from app.config import Config
 from app.utils.token_manager import decode_token, encode_token
 from datetime import datetime
+from decimal import Decimal
 
 from app import db
 
@@ -24,7 +25,7 @@ def add_enrollment():
         
     data = request.form 
 
-    required_fields = ['enrollments_student_id', 'enrollments_course_ids', 'enrollments_start_date', 'enrollments_end_date']
+    required_fields = ['enrollments_student_id', 'enrollments_course_ids', 'enrollments_start_date', 'enrollments_end_date', 'enrollments_price']
     for field in required_fields:
         if field not in data:
             return jsonify({'error': f'Campo {field} es obligatorio'}), 400
@@ -33,22 +34,25 @@ def add_enrollment():
     enrollments_course_ids = request.form.getlist('enrollments_course_ids') 
     enrollments_start_date = datetime.strptime(data['enrollments_start_date'], '%Y-%m-%d %H:%M:%S')
     enrollments_end_date = datetime.strptime(data['enrollments_end_date'], '%Y-%m-%d %H:%M:%S')
+    enrollments_price = data.get('enrollments_price') 
 
     student = Student.query.get(enrollments_student_id)
 
     if not student:
         return jsonify({'error': 'Student not found'}), 404
-
-    if not enrollments_course_ids:
-        return jsonify({'error': 'Debe proporcionar al menos un curso'}), 400
-
+    
+        if not enrollments_course_ids:
+            return jsonify({'error': 'Debe proporcionar al menos un curso'}), 400
+    
     new_enrollment_code = Enrollment.generate_enrollments_code()
 
     successful_enrollments = []
     errors = []
 
+
     for course_id in enrollments_course_ids:
         course = Course.query.get(course_id)
+        enrollments_price = data.get(f'enrollments_price_{course_id}')
 
         if not course:
             errors.append(f'Course with id {course_id} not found')
@@ -69,7 +73,9 @@ def add_enrollment():
             enrollments_start_date = enrollments_start_date,
             enrollments_end_date = enrollments_end_date,
             enrollments_finalized=False,
+            enrollments_price = enrollments_price
         )
+
         new_relationship.enrollments_code = new_enrollment_code 
 
         try:
@@ -108,8 +114,8 @@ def all_enrollments():
     result = enrollments_schema.dump(all_enrollments)
     return jsonify(result)
 
-@bp.route('/enrollment/<id>', methods=["GET"])
-def get_enrollment(id):
+@bp.route('/enrollment/<enrollmentId>', methods=["GET"])
+def get_enrollment_by_id(enrollmentId):
 
     auth_header = request.headers.get('Authorization')
     
@@ -118,12 +124,29 @@ def get_enrollment(id):
     except ValueError as e:
         return jsonify({'error': str(e)}), 401
         
-    enrollment = Enrollment.query.get(id)
+    enrollment = Enrollment.query.get(enrollmentId)
 
     if enrollment is None:
         return jsonify({'message': 'Enrollment not found'}), 404
     
     return enrollment_schema.jsonify(enrollment), 200
+
+@bp.route('/enrollments/<studentId>', methods=["GET"])
+def get_enrollments_by_student_id(studentId):
+
+    auth_header = request.headers.get('Authorization')
+    
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+        
+    enrollment = Enrollment.query.filter_by(enrollments_student_id=studentId).all()
+
+    if enrollment is None:
+        return jsonify({'message': 'Enrollment not found'}), 404
+    
+    return enrollments_schema.jsonify(enrollment), 200
 
 @bp.route('/enrollment/<id>', methods=["PUT"])
 def update_enrollment(id):
@@ -146,6 +169,7 @@ def update_enrollment(id):
     enrollment.enrollments_start_date = data.get('enrollments_start_date', enrollment.enrollments_start_date)
     enrollment.enrollments_end_date = data.get('enrollments_end_date', enrollment.enrollments_end_date)
     enrollment.enrollments_finalized = data.get('enrollments_finalized', enrollment.enrollments_finalized)
+    enrollment.enrollments_price = data.get('enrollments_price', enrollment.enrollments_price)
     db.session.commit()
 
     return enrollment_schema.jsonify(enrollment)

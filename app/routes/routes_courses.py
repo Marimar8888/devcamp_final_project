@@ -3,7 +3,8 @@ from flask import Blueprint, request, jsonify, current_app, url_for
 from app import db
 import os
 
-from app.models import Course, CourseSchema
+from app.models import Course, Enrollment
+from app.schema.course_schema import CourseSchema, CourseBasicSchema
 from app.config import Config
 from app.utils.token_manager import decode_token, encode_token
 from app.utils import save_file
@@ -13,6 +14,7 @@ bp = Blueprint('courses', __name__)
 
 course_schema = CourseSchema()
 courses_schema = CourseSchema(many=True)
+courses_basic_schema = CourseBasicSchema(many=True)
 
 @bp.route('/course', methods=["POST"])
 def add_course():    
@@ -106,6 +108,31 @@ def get_courses_by_category(categoryId):
         'page': page,  
         'pages': paginated_courses.pages  
     })
+
+@bp.route("/courses/student_id/<studentId>", methods=["GET"])
+def get_courses_by_student_id(studentId):
+
+    auth_header = request.headers.get('Authorization')
+    
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
+    enrollments = Enrollment.query.filter_by(enrollments_student_id=studentId).all()
+
+    if not enrollments:
+        return jsonify({'message': 'No enrollments found for this student'}), 404
+        
+    course_ids = [enrollment.enrollments_course_id for enrollment in enrollments]
+
+    courses = Course.query.filter(Course.courses_id.in_(course_ids)).all()
+
+    if courses is None:
+        return jsonify({'message': 'Courses not found'}), 404
+    
+    return courses_basic_schema.jsonify(courses), 200
+
 
 @bp.route("/course/<id>", methods=["PUT"])
 def update_course(id):
