@@ -42,6 +42,8 @@ def add_enrollment():
     if not enrollments_course_ids:
         return jsonify({'error': 'Debe proporcionar al menos un curso'}), 400
 
+    new_enrollment_code = Enrollment.generate_enrollments_code()
+
     successful_enrollments = []
     errors = []
 
@@ -65,13 +67,18 @@ def add_enrollment():
             enrollments_student_id = enrollments_student_id, 
             enrollments_course_id = course_id,
             enrollments_start_date = enrollments_start_date,
-            enrollments_end_date = enrollments_end_date
+            enrollments_end_date = enrollments_end_date,
+            enrollments_finalized=False,
         )
+        new_relationship.enrollments_code = new_enrollment_code 
 
         try:
             db.session.add(new_relationship)
             db.session.commit()
-            successful_enrollments.append(course_id)
+            successful_enrollments.append({
+                'course_id': course_id,
+                'enrollments_code': new_relationship.enrollments_code 
+            })
         except Exception as e:
             db.session.rollback()
             errors.append(f'Error al matricularse en el curso con id {course_id}: {str(e)}')
