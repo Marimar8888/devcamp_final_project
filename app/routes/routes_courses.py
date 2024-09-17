@@ -3,7 +3,7 @@ from flask import Blueprint, request, jsonify, current_app, url_for
 from app import db
 import os
 
-from app.models import Course, Enrollment
+from app.models import Course, Enrollment, Favorite
 from app.schema.course_schema import CourseSchema, CourseBasicSchema
 from app.config import Config
 from app.utils.token_manager import decode_token, encode_token
@@ -131,6 +131,30 @@ def get_courses_by_student_id(studentId):
     if courses is None:
         return jsonify({'message': 'Courses not found'}), 404
     
+    return courses_basic_schema.jsonify(courses), 200
+
+@bp.route("/courses/favorites/<userId>", methods=["GET"])
+def get_courses_by_favorites(userId):
+
+    auth_header = request.headers.get('Authorization')
+    
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
+    favorite_courses = Favorite.query.filter_by(favorites_user_id=userId).all()
+
+    if not favorite_courses:
+        return jsonify({'message': 'No favorite courses found for this user'}), 404
+
+    favorite_course_ids = [fav.favorites_course_id for fav in favorite_courses]
+
+    courses = Course.query.filter(Course.courses_id.in_(favorite_course_ids)).all()
+
+    if not courses:
+        return jsonify({'message': 'No courses found for this user'}), 404
+  
     return courses_basic_schema.jsonify(courses), 200
 
 

@@ -189,7 +189,6 @@ def get_all_dates_professor(id):
         }
     }
 
-    # result = professor_schema
     result = professor_schema
 
     page = request.args.get('page', 1, type=int)
@@ -197,18 +196,13 @@ def get_all_dates_professor(id):
 
     paginated_courses = Course.query.filter_by(courses_professor_id=id).paginate(page=page, per_page=limit, error_out=False)
     courses_data = courses_schema.dump(paginated_courses.items)
-    # courses = Course.query.filter_by(courses_professor_id=id).all()
-    # result['courses'] = courses_schema.dump(courses)
+
     result['courses'] = {
         'items': courses_data,
         'total': paginated_courses.total,
         'page': page,
         'pages': paginated_courses.pages
     }
-
-    print("Paginated courses:", paginated_courses.items)
-    print("Courses data:", courses_data)
-
     professor_students = ProfessorStudent.query.filter_by(professor_student_professor_id=id).all()
     student_ids = [ps.professor_student_student_id for ps in professor_students]
     students = Student.query.filter(Student.students_id.in_(student_ids)).all()
