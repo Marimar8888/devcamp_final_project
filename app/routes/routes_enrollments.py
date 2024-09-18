@@ -131,6 +131,8 @@ def get_enrollment_by_id(enrollmentId):
     
     return enrollment_schema.jsonify(enrollment), 200
 
+
+
 @bp.route('/enrollments/<studentId>', methods=["GET"])
 def get_enrollments_by_student_id(studentId):
 
@@ -147,6 +149,26 @@ def get_enrollments_by_student_id(studentId):
         return jsonify({'message': 'Enrollment not found'}), 404
     
     return enrollments_schema.jsonify(enrollment), 200
+
+@bp.route('/enrollments/professor/<professorId>', methods=["GET"])
+def get_enrollments_by_professor_id(professorId):
+
+    auth_header = request.headers.get('Authorization')
+    
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+    
+    course_ids = [course.courses_id for course in Course.query.filter_by(courses_professor_id=professorId).all()]
+
+    if course_ids:
+        enrollments = Enrollment.query.filter(Enrollment.enrollments_course_id.in_(course_ids)).all()
+        
+    if enrollments is None:
+        return jsonify({'message': 'Enrollment not found'}), 404
+    
+    return enrollments_schema.jsonify(enrollments), 200
 
 @bp.route('/enrollment/<id>', methods=["PUT"])
 def update_enrollment(id):
