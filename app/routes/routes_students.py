@@ -118,50 +118,9 @@ def get_student(id):
 
     return jsonify(student_schema)
 
-@bp.route("/student/<id>", methods=["PATCH"])
-def update_student(id):
-    auth_header = request.headers.get('Authorization')
-    try:
-        decoded_token = decode_token(auth_header)
-    except ValueError as e:
-        return jsonify({'error': str(e)}), 401
 
-    student = Student.query.get(id)
-
-    if student is None:
-        return jsonify({'message': 'Student not found'}), 404
-
-    data = request.form
-
-    if 'students_first_name' in data:
-        student.students_first_name = data['students_first_name']
-    if 'students_last_name' in data:
-        student.students_last_name = data['students_last_name']
-    if 'students_email' in data:
-        student.students_email = data['students_email']
-    if 'students_user_id' in data:
-        student.students_user_id = data['students_user_id']
-    if 'students_dni' in data:
-        student.students_dni = data['students_dni']
-    if 'students_address' in data:
-        student.students_address = data['students_address']
-    if 'students_city' in data:
-        student.students_city = data['students_city']
-    if 'students_postal' in data:
-        student.students_postal = data['students_postal']
-    if 'students_number_card' in data:
-        student.students_number_card = data['students_number_card']
-    if 'students_exp_date' in data:
-        student.students_exp_date = data['students_exp_date']
-    if 'students_cvc' in data:
-        student.students_cvc = data['students_cvc']
-
-    db.session.commit()
-
-    return jsonify(student_schema.dump(student))
-
-@bp.route("/courses/student/<student_id>", methods=["GET"])
-def get_student_with_courses(student_id):
+@bp.route("/student/courses/<student_id>", methods=["GET"])
+def get_student_by_student_id_with_courses(student_id):
 
     auth_header = request.headers.get('Authorization')
     try:
@@ -213,6 +172,50 @@ def get_student_with_courses(student_id):
     }
 
     return jsonify(student_schema_with_courses)
+
+@bp.route("/student/<id>", methods=["PATCH"])
+def update_student(id):
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
+    student = Student.query.get(id)
+
+    if student is None:
+        return jsonify({'message': 'Student not found'}), 404
+
+    data = request.form
+
+    if 'students_first_name' in data:
+        student.students_first_name = data['students_first_name']
+    if 'students_last_name' in data:
+        student.students_last_name = data['students_last_name']
+    if 'students_email' in data:
+        student.students_email = data['students_email']
+    if 'students_user_id' in data:
+        student.students_user_id = data['students_user_id']
+    if 'students_dni' in data:
+        student.students_dni = data['students_dni']
+    if 'students_address' in data:
+        student.students_address = data['students_address']
+    if 'students_city' in data:
+        student.students_city = data['students_city']
+    if 'students_postal' in data:
+        student.students_postal = data['students_postal']
+    if 'students_number_card' in data:
+        student.students_number_card = data['students_number_card']
+    if 'students_exp_date' in data:
+        student.students_exp_date = data['students_exp_date']
+    if 'students_cvc' in data:
+        student.students_cvc = data['students_cvc']
+
+    db.session.commit()
+
+    return jsonify(student_schema.dump(student))
+
+
   
 @bp.route("/student/<id>", methods=["DELETE"])
 def delete_student(id):

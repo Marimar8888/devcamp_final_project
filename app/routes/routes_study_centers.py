@@ -172,7 +172,7 @@ def update_studycenter(id):
     if studyCenter is None:
         return jsonify({'message': 'StudyCenter not found'}), 404
 
-    data = request.json
+    data = request.form
     if 'studyCenters_name' in data:
         studyCenter.studyCenters_name = data['studyCenters_name']
     if 'studyCenters_email' in data:
@@ -199,6 +199,33 @@ def update_studycenter(id):
     db.session.commit()
 
     return studyCenter_detail_schema.jsonify(studyCenter)
+
+
+@bp.route("/studycenter/status/<center_id>", methods=["PATCH"])
+def update_status_studycenter(center_id):
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
+    studyCenter = StudyCenter.query.get(center_id)
+
+    if studyCenter is None:
+        return jsonify({'message': 'StudyCenter not found'}), 404
+
+    data = request.json
+    if 'studyCenters_active' in data:
+        studyCenter.studyCenters_active = data['studyCenters_active']
+
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback() 
+        return jsonify({'error': f"Failed to update StudyCenter: {str(e)}"}), 500
+
+    return jsonify({'message': 'StudyCenter status updated successfully', 'studyCenters_active': studyCenter.studyCenters_active}), 200
 
 @bp.route("/studycenter/<id>", methods=["DELETE"])
 def delete_studycenter(id):

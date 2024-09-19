@@ -109,6 +109,37 @@ def get_courses_by_category(categoryId):
         'pages': paginated_courses.pages  
     })
 
+@bp.route("/courses/professor/<int:professorId>/type/<int:TypeId>", methods=["GET"])
+def get_courses_by_type_Id(professorId, TypeId):
+
+    page = request.args.get('page', 1, type=int)  
+    limit = request.args.get('limit', 10, type=int)  
+
+    query = Course.query.filter_by(courses_professor_id=professorId)
+
+    if TypeId == 5:
+        query = query.query.filter_by(courses_active=True)
+    elif TypeId == 6:
+        query = query.query.filter_by(courses_active=False)
+    elif TypeId != 3:
+        return jsonify({'message': 'Invalid TypeId'}), 400
+
+    paginated_courses = query.paginate(page=page, per_page=limit, error_out=False)
+
+    result = courses_schema.dump(paginated_courses.items)
+    
+    if not result:
+         return jsonify({'message': 'Courses not found'}), 404
+
+    result = courses_basic_schema.dump(paginated_courses.items)
+
+    return jsonify({
+        'courses': result,  
+        'total': paginated_courses.total, 
+        'page': page,  
+        'pages': paginated_courses.pages  
+    })
+
 @bp.route("/courses/student_id/<studentId>", methods=["GET"])
 def get_courses_by_student_id(studentId):
 

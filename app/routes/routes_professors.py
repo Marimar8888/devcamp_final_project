@@ -4,6 +4,7 @@ from app.models.course import Course
 from app.models.student import Student
 from app.models import StudyCenter
 from app.models import User, UserRol, Rol
+from app.models import Enrollment
 from app.models.professor_student import ProfessorStudent
 from app.schema.professor_schema import ProfessorSchema, ProfessorBasicSchema
 from app.schema.course_schema import CourseSchema
@@ -158,8 +159,8 @@ def get_professor(id):
 
     return jsonify(result)
 
-@bp.route("/all_dates/professor/<id>", methods=["GET"])
-def get_all_dates_professor(id):
+@bp.route("/professor/all_dates/<professorId>", methods=["GET"])
+def get_all_dates_professor(professorId):
 
     auth_header = request.headers.get('Authorization')
     try:
@@ -167,7 +168,7 @@ def get_all_dates_professor(id):
     except ValueError as e:
         return jsonify({'error': str(e)}), 401
 
-    professor = Professor.query.get(id)
+    professor = Professor.query.get(professorId)
 
     if professor is None:
         return jsonify({'message': 'Professor not found'}), 404
@@ -194,7 +195,7 @@ def get_all_dates_professor(id):
     page = request.args.get('page', 1, type=int)
     limit = request.args.get('limit', 10, type=int)
 
-    paginated_courses = Course.query.filter_by(courses_professor_id=id).paginate(page=page, per_page=limit, error_out=False)
+    paginated_courses = Course.query.filter_by(courses_professor_id=professorId).paginate(page=page, per_page=limit, error_out=False)
     courses_data = courses_schema.dump(paginated_courses.items)
 
     result['courses'] = {
@@ -203,16 +204,19 @@ def get_all_dates_professor(id):
         'page': page,
         'pages': paginated_courses.pages
     }
-    professor_students = ProfessorStudent.query.filter_by(professor_student_professor_id=id).all()
-    student_ids = [ps.professor_student_student_id for ps in professor_students]
-    students = Student.query.filter(Student.students_id.in_(student_ids)).all()
+
+    # Students of a teacher 
+    students = db.session.query(Student).\
+        join(Enrollment, Student.students_id == Enrollment.enrollments_student_id).\
+        join(Course, Enrollment.enrollments_course_id == Course.courses_id).\
+        filter(Course.courses_professor_id == professorId).all()
     students_data = students_schema.dump(students)
     result['students'] = students_data
-   
-    professor_study_centers = ProfessorStudyCenter.query.filter_by(professor_id=id).all()
+  
+    # Centers for which the teacher works
+    professor_study_centers = ProfessorStudyCenter.query.filter_by(professor_id=professorId).all()
     study_center_ids = [psc.studyCenter_id for psc in professor_study_centers]
     study_centers = StudyCenter.query.filter(StudyCenter.studyCenters_id.in_(study_center_ids)).all()
-
     study_centers_data = studyCenters_schema.dump(study_centers)
     result['study_centers'] = study_centers_data
 
