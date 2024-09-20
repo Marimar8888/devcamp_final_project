@@ -6,7 +6,7 @@ import os
 from app.models import Course, Enrollment, Favorite
 from app.schema.course_schema import CourseSchema, CourseBasicSchema
 from app.config import Config
-from app.utils.token_manager import decode_token, encode_token
+from app.utils.token_manager import decode_token, encode_token, get_user_id_from_token
 from app.utils import save_file
 
 
@@ -110,7 +110,14 @@ def get_courses_by_category(categoryId):
     })
 
 @bp.route("/courses/professor/<int:professorId>/type/<int:TypeId>", methods=["GET"])
-def get_courses_by_type_Id(professorId, TypeId):
+def get_courses_professor_by_type_Id(professorId, TypeId):
+
+    auth_header = request.headers.get('Authorization')
+    
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
 
     page = request.args.get('page', 1, type=int)  
     limit = request.args.get('limit', 10, type=int)  
@@ -118,13 +125,62 @@ def get_courses_by_type_Id(professorId, TypeId):
     query = Course.query.filter_by(courses_professor_id=professorId)
 
     if TypeId == 5:
-        query = query.query.filter_by(courses_active=True)
+        query = query.filter_by(courses_active=True)
     elif TypeId == 6:
-        query = query.query.filter_by(courses_active=False)
+        query = query.filter_by(courses_active=False)
     elif TypeId != 3:
         return jsonify({'message': 'Invalid TypeId'}), 400
 
     paginated_courses = query.paginate(page=page, per_page=limit, error_out=False)
+
+    result = courses_schema.dump(paginated_courses.items)
+    
+    if not result:
+         return jsonify({'message': 'Courses not found'}), 404
+
+    result = courses_basic_schema.dump(paginated_courses.items)
+
+    return jsonify({
+        'courses': result,  
+        'total': paginated_courses.total, 
+        'page': page,  
+        'pages': paginated_courses.pages  
+    })
+
+@bp.route("/courses/student/<int:studentId>/type/<int:TypeId>", methods=["GET"])
+def get_courses_student_by_type_Id(studentId, TypeId):
+
+    auth_header = request.headers.get('Authorization')
+    
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
+    try:
+         user_id = get_user_id_from_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 404
+  
+    page = request.args.get('page', 1, type=int)  
+    limit = request.args.get('limit', 10, type=int)  
+
+    if TypeId == 1:
+        courses = db.session.query(Course).\
+            join(Enrollment, Enrollment.enrollments_course_id == Course.courses_id).\
+            filter(Enrollment.enrollments_student_id == studentId, Enrollment.enrollments_finalized == False)
+    elif TypeId == 2:
+        courses = db.session.query(Course).\
+            join(Enrollment, Enrollment.enrollments_course_id == Course.courses_id).\
+            filter(Enrollment.enrollments_student_id == studentId, Enrollment.enrollments_finalized == True)  
+    elif TypeId == 4:  
+        courses = db.session.query(Course).\
+            join(Favorite, Favorite.favorites_course_id == Course.courses_id).\
+            filter(Favorite.favorites_user_id == user_id)
+    else: 
+        return jsonify({'message': 'Invalid TypeId'}), 400
+
+    paginated_courses = courses.paginate(page=page, per_page=limit, error_out=False)
 
     result = courses_schema.dump(paginated_courses.items)
     
