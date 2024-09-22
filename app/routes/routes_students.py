@@ -206,8 +206,39 @@ def get_student_by_student_id_with_courses(student_id):
 
     return jsonify(student_schema_with_courses)
 
+
+@bp.route("/students/professor/<professorId>", methods=["GET"])
+def get_students_by_professor_id(professorId):
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
+    page = request.args.get('page', 1, type=int)  
+    limit = request.args.get('limit', 10, type=int)  
+
+    students_query = db.session.query(Student).\
+        join(Enrollment, Student.students_id == Enrollment.enrollments_student_id).\
+        join(Course, Enrollment.enrollments_course_id == Course.courses_id).\
+        filter(Course.courses_professor_id == professorId).distinct()
+       
+    paginated_students =  students_query.paginate(page=page, per_page=limit, error_out=False)
+
+    result = students_schema.dump(paginated_students.items)
+
+    return jsonify({
+        'students': result,
+        'page': paginated_students.page,
+        'total_pages': paginated_students.pages,
+        'total_students': paginated_students.total
+    }), 200
+
+
+
 @bp.route("/students/status/professor/<int:professorId>/type/<int:typeId>", methods=["GET"])
-def get_students_active_by_professor_id(professorId, typeId):
+def get_students_by_type_by_professor_id(professorId, typeId):
 
     auth_header = request.headers.get('Authorization')
     try:
@@ -238,6 +269,71 @@ def get_students_active_by_professor_id(professorId, typeId):
     
     students_query = students_query.distinct()
     
+    paginated_students =  students_query.paginate(page=page, per_page=limit, error_out=False)
+
+    result = students_schema.dump(paginated_students.items)
+
+    return jsonify({
+        'students': result,
+        'page': paginated_students.page,
+        'total_pages': paginated_students.pages,
+        'total_students': paginated_students.total
+    }), 200
+
+
+@bp.route("/students/status/active/<int:professorId>", methods=["GET"])
+def get_students_active_by_professor_id(professorId):
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
+    page = request.args.get('page', 1, type=int)  
+    limit = request.args.get('limit', 10, type=int)  
+
+    students_query = db.session.query(Student).\
+        join(Enrollment, Student.students_id == Enrollment.enrollments_student_id).\
+        join(Course, Enrollment.enrollments_course_id == Course.courses_id).\
+        filter(Course.courses_professor_id == professorId, Enrollment.enrollments_finalized == False).distinct()
+        
+    paginated_students =  students_query.paginate(page=page, per_page=limit, error_out=False)
+
+    result = students_schema.dump(paginated_students.items)
+
+    return jsonify({
+        'students': result,
+        'page': paginated_students.page,
+        'total_pages': paginated_students.pages,
+        'total_students': paginated_students.total
+    }), 200
+
+@bp.route("/students/status/inactive/<int:professorId>", methods=["GET"])
+def get_students_inactive_by_professor_id(professorId):
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
+    page = request.args.get('page', 1, type=int)  
+    limit = request.args.get('limit', 10, type=int)  
+
+    students_query = db.session.query(Student).\
+        join(Enrollment, Student.students_id == Enrollment.enrollments_student_id).\
+        join(Course, Enrollment.enrollments_course_id == Course.courses_id).\
+        filter(Course.courses_professor_id == professorId)
+    
+    subquery_not_finalized = db.session.query(Enrollment.enrollments_student_id).\
+        filter(Enrollment.enrollments_finalized == False).subquery()
+    
+    students_query = students_query.filter(Enrollment.enrollments_finalized == True).\
+            filter(Student.students_id.notin_(subquery_not_finalized))
+    
+    students_query = students_query.distinct()
+        
     paginated_students =  students_query.paginate(page=page, per_page=limit, error_out=False)
 
     result = students_schema.dump(paginated_students.items)
