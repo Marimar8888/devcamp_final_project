@@ -18,7 +18,7 @@ def add_student():
 
     auth_header = request.headers.get('Authorization')
     try:
-        decoded_token = decode_token(auth_header)
+        decode_token = decode_token(auth_header)
     except ValueError as e:
         return jsonify({'error': str(e)}), 401
     
@@ -119,6 +119,39 @@ def get_student(id):
     return jsonify(student_schema)
 
 
+@bp.route("/student/user_id/<user_id>", methods=["GET"])
+def get_student_id_by_user_id(user_id):
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
+    student = Student.query.filter_by(students_user_id=user_id).first()
+
+    if student is None:
+        return jsonify({'message': 'Student not found'}), 404
+
+    return jsonify({'students_id': student.students_id})
+
+@bp.route("/student/userId/<user_id>", methods=["GET"])
+def get_student_dates_by_user_id(user_id):
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
+    student = Student.query.filter_by(students_user_id=user_id).first()
+
+    if student is None:
+        return jsonify({'message': 'Student not found'}), 404
+
+    return jsonify(student_schema.dump(student))
+
+
 @bp.route("/student/courses/<student_id>", methods=["GET"])
 def get_student_by_student_id_with_courses(student_id):
 
@@ -172,6 +205,49 @@ def get_student_by_student_id_with_courses(student_id):
     }
 
     return jsonify(student_schema_with_courses)
+
+@bp.route("/students/status/professor/<int:professorId>/type/<int:typeId>", methods=["GET"])
+def get_students_active_by_professor_id(professorId, typeId):
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
+    page = request.args.get('page', 1, type=int)  
+    limit = request.args.get('limit', 10, type=int)  
+
+    students_query = db.session.query(Student).\
+        join(Enrollment, Student.students_id == Enrollment.enrollments_student_id).\
+        join(Course, Enrollment.enrollments_course_id == Course.courses_id).\
+        filter(Course.courses_professor_id == professorId)
+    
+    subquery_not_finalized = db.session.query(Enrollment.enrollments_student_id).\
+        filter(Enrollment.enrollments_finalized == False).subquery()
+          
+    if typeId == 1:
+        students_query = students_query.filter(Enrollment.enrollments_finalized == False)
+    elif typeId == 2:
+        students_query = students_query.filter(Enrollment.enrollments_finalized == True).\
+            filter(Student.students_id.notin_(subquery_not_finalized))
+    elif typeId == 3:  
+        pass
+    else: 
+        return jsonify({'message': 'Invalid TypeId'}), 400
+    
+    students_query = students_query.distinct()
+    
+    paginated_students =  students_query.paginate(page=page, per_page=limit, error_out=False)
+
+    result = students_schema.dump(paginated_students.items)
+
+    return jsonify({
+        'students': result,
+        'page': paginated_students.page,
+        'total_pages': paginated_students.pages,
+        'total_students': paginated_students.total
+    }), 200
 
 @bp.route("/student/<id>", methods=["PATCH"])
 def update_student(id):
@@ -236,36 +312,3 @@ def delete_student(id):
     db.session.commit()
 
     return jsonify({'message': 'Student deleted'})
-
-
-@bp.route("/student/user_id/<user_id>", methods=["GET"])
-def get_student_id_by_user_id(user_id):
-
-    auth_header = request.headers.get('Authorization')
-    try:
-        decoded_token = decode_token(auth_header)
-    except ValueError as e:
-        return jsonify({'error': str(e)}), 401
-
-    student = Student.query.filter_by(students_user_id=user_id).first()
-
-    if student is None:
-        return jsonify({'message': 'Student not found'}), 404
-
-    return jsonify({'students_id': student.students_id})
-
-@bp.route("/student/userId/<user_id>", methods=["GET"])
-def get_student_dates_by_user_id(user_id):
-
-    auth_header = request.headers.get('Authorization')
-    try:
-        decoded_token = decode_token(auth_header)
-    except ValueError as e:
-        return jsonify({'error': str(e)}), 401
-
-    student = Student.query.filter_by(students_user_id=user_id).first()
-
-    if student is None:
-        return jsonify({'message': 'Student not found'}), 404
-
-    return jsonify(student_schema.dump(student))
