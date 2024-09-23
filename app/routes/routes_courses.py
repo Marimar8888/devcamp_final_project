@@ -32,6 +32,9 @@ def add_course():
     courses_category_id = request.form.get('courses_category_id')
     courses_active = request.form.get('courses_active')
 
+    if courses_active is not None:
+        courses_active = courses_active.lower() == 'true'
+
     upload_folder = current_app.config['UPLOAD_FOLDER']
     if courses_image_file and courses_image_file.filename:
         filename, error = save_file(courses_image_file, upload_folder)
@@ -50,11 +53,11 @@ def add_course():
         courses_title=courses_title,
         courses_content=courses_content,
         courses_image=file_url,  
-        courses_price=courses_price,
-        courses_discounted_price=courses_discounted_price,
-        courses_professor_id=courses_professor_id,
-        courses_studycenter_id=courses_studycenter_id,
-        courses_category_id=courses_category_id,
+        courses_price=float(courses_price),  
+        courses_discounted_price=float(courses_discounted_price) if courses_discounted_price else None,
+        courses_professor_id=int(courses_professor_id),  
+        courses_studycenter_id=int(courses_studycenter_id) if courses_studycenter_id else None,
+        courses_category_id=int(courses_category_id),
         courses_active = courses_active
     )
 

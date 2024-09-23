@@ -235,8 +235,6 @@ def get_students_by_professor_id(professorId):
         'total_students': paginated_students.total
     }), 200
 
-
-
 @bp.route("/students/status/professor/<int:professorId>/type/<int:typeId>", methods=["GET"])
 def get_students_by_type_by_professor_id(professorId, typeId):
 
