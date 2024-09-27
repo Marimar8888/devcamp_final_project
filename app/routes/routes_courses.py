@@ -22,6 +22,10 @@ def add_course():
         return jsonify({'error': 'Unsupported Media Type'}), 415
 
     courses_image_file = request.files.get('file')
+    if courses_image_file:
+        print(f"Archivo recibido: {courses_image_file.filename}")  # Muestra el nombre del archivo para verificar
+    else:
+        print("No se recibió ningún archivo para courses_image")
 
     courses_title = request.form.get('courses_title')
     courses_content = request.form.get('courses_content')
