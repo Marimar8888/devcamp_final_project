@@ -7,7 +7,7 @@ from app.models import Course, Enrollment, Favorite
 from app.schema.course_schema import CourseSchema, CourseBasicSchema
 from app.config import Config
 from app.utils.token_manager import decode_token, encode_token, get_user_id_from_token
-from app.utils import save_file
+from app.utils import save_file, delete_course_image
 
 
 bp = Blueprint('courses', __name__)
@@ -362,3 +362,34 @@ def delete_course(id):
     response.headers.add('Access-Control-Allow-Origin', '*')
 
     return jsonify({'message': 'Course deleted'})
+
+# Un endpoint especifico para eliminar la imagen
+@bp.route("/course/<id>/delete-image", methods=["DELETE"])
+def delete_course_image(id):
+    auth_header = request.headers.get('Authorization')
+
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+
+    course = Course.query.get(id)
+
+    if course is None:
+        return jsonify({'message': 'Course not found'}), 404
+
+    if course.courses_image:
+        try:
+            delete_course_image(course.courses_image)
+            
+            course.courses_image = None
+            db.session.commit()
+
+            return jsonify({'message': 'Image deleted successfully'}), 200
+        except Exception as e:
+            return jsonify({'error': 'Failed to delete the image file', 'details': str(e)}), 500
+    else:
+        return jsonify({'message': 'No image to delete'}), 400
+
+
+
