@@ -364,17 +364,25 @@ def delete_course(id):
     image_path = None
     if course.courses_image:
         image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], os.path.basename(course.courses_image))
-    
+
+    other_courses_with_same_image = Course.query.filter(
+        Course.courses_image == course.courses_image, 
+        Course.courses_id != id
+    ).count()
+
     db.session.delete(course)
     db.session.commit()
 
-    if image_path and os.path.exists(image_path):
-        os.remove(image_path)
+    if image_path and os.path.exists(image_path) and other_courses_with_same_image == 0:
+        try:
+            os.remove(image_path)
+        except Exception as e:
+            return jsonify({'error': 'Failed to delete the image file', 'details': str(e)}), 500
 
     response = jsonify({'message': 'Course deleted'})
     response.headers.add('Access-Control-Allow-Origin', '*')
 
-    return jsonify({'message': 'Course deleted'})
+    return response
 
 # Un endpoint especifico para eliminar la imagen
 @bp.route("/course/<id>/delete-image", methods=["DELETE"])
