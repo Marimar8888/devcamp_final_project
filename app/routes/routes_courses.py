@@ -283,7 +283,6 @@ def update_course(id):
 
 @bp.route("/course/<id>", methods=["PATCH"])
 def updatePatch_course(id):
-
     auth_header = request.headers.get('Authorization')
 
     try:
@@ -296,38 +295,52 @@ def updatePatch_course(id):
     if course is None:
         return jsonify({'message': 'Course not found'}), 404
     
-    data = request.json 
+    data = request.form 
+    courses_image_file = request.files.get('file')
 
-    if 'courses_title' in data:
+    if 'courses_title' in data and data['courses_title'].strip():
         course.courses_title = data['courses_title']
-    if 'courses_content' in data:
+    if 'courses_content' in data and data['courses_content'].strip():
         course.courses_content = data['courses_content']
-    if 'courses_price' in data:
+    if 'courses_price' in data and data['courses_price'].strip():
         course.courses_price = data['courses_price']
-    if 'courses_discounted_price' in data:
+    if 'courses_discounted_price' in data and data['courses_discounted_price'].strip():
         course.courses_discounted_price = data['courses_discounted_price']
-    if 'courses_professor_id' in data:
+    if 'courses_professor_id' in data and data['courses_professor_id'].strip():
         course.courses_professor_id = data['courses_professor_id']
-    if 'courses_studycenter_id' in data:
+    if 'courses_studycenter_id' in data and data['courses_studycenter_id'].strip():
         course.courses_studycenter_id = data['courses_studycenter_id']
-    if 'courses_category_id' in data:
+    if 'courses_category_id' in data and data['courses_category_id'].strip():
         course.courses_category_id = data['courses_category_id']
-    if 'courses_active' in data:
-        course.courses_active = data['courses_active']
+    if 'courses_active' in data and data['courses_active'].strip():
+        course.courses_active = data['courses_active'].lower() == 'true'
 
-    if 'courses_image' in data:
-        if data['courses_image'] is None and course.courses_image:
-            try:
-                image_filename = os.path.basename(course.courses_image)
-                image_path = os.path.join('app', 'static', 'uploads', image_filename)
-                if os.path.exists(image_path):
-                    os.remove(image_path)
-                else:
-                    print("El archivo no existe en la ruta especificada.")  
-            except Exception as e:
-                return jsonify({'error': 'Failed to delete the image file', 'details': str(e)}), 500
+    if courses_image_file:
+        if course.courses_image:
+            other_courses_with_same_image = Course.query.filter(Course.courses_image == course.courses_image, Course.courses_id != id).count()
 
-        course.courses_image = data['courses_image']
+            if other_courses_with_same_image == 0:  
+                try:
+                    image_filename = os.path.basename(course.courses_image)
+                    image_path = os.path.join('app', 'static', 'uploads', image_filename)
+                    if os.path.exists(image_path):
+                        os.remove(image_path)
+                    else:
+                        print("El archivo no existe en la ruta especificada.")  
+                except Exception as e:
+                    return jsonify({'error': 'Failed to delete the image file', 'details': str(e)}), 500
+
+        upload_folder = current_app.config['UPLOAD_FOLDER']
+        filename, error = save_file(courses_image_file, upload_folder)
+
+        if error:
+            return jsonify({'error': error}), 400
+
+        if filename:  
+            file_url = url_for('static', filename=f'uploads/{filename}', _external=True)
+            course.courses_image = file_url  
+        else:
+            course.courses_image = None
 
     db.session.commit()
 

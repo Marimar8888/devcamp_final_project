@@ -10,6 +10,9 @@ def save_file(file, upload_folder):
 
     filename = secure_filename(file.filename)
     file_path = os.path.join(upload_folder, filename)
+
+    print(f"Saving file to: {file_path}")
+
     try:
         file.save(file_path)
         return filename, None
