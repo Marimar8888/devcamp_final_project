@@ -109,6 +109,7 @@ def all_professors():
    
     return jsonify(resul)
 
+
 @bp.route("/professor/user_id/<user_id>", methods=["GET"])
 def get_professor_id_by_user_id(user_id):
 

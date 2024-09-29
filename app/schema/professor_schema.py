@@ -14,3 +14,4 @@ class ProfessorBasicSchema(ma.SQLAlchemyAutoSchema):
         model = Professor
         load_instance = True
         include_relationships = False
+

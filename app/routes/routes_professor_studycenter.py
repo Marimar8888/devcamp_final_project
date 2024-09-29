@@ -72,6 +72,26 @@ def all_professor_studycenters():
     result = professor_studycenters_schema.dump(all_professor_studycenters)
     return jsonify(result)
 
+@bp.route('/centers/professor/<professorId>', methods=["GET"])
+def study_centers_dates_by_professorId(professorId):
+
+    auth_header = request.headers.get('Authorization')
+    try:
+        decoded_token = decode_token(auth_header)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 401
+    
+    study_centers = db.session.query(
+        ProfessorStudyCenter.studyCenter_id, StudyCenter.studyCenters_name
+    ).join(StudyCenter, ProfessorStudyCenter.studyCenter_id==StudyCenter.studyCenters_id
+    ).filter(ProfessorStudyCenter.professor_id==professorId
+    ).all()
+
+    study_centers_list = [{'id': center.studyCenter_id, 'name': center.studyCenters_name} for center in study_centers]
+
+    return jsonify(study_centers_list)
+
+
 @bp.route('/professor_studycenter', methods=["DELETE"])
 def delete_professor_studycenter():
 

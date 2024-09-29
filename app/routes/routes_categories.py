@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
-from app.models import Category, CategorySchema
+from app.models import Category 
+from app.schema.category_schema import CategorySchema, CategoryBasicSchema
 from app import db
 from app.config import Config
 from app.utils.token_manager import decode_token, encode_token
@@ -8,6 +9,7 @@ bp = Blueprint('categories', __name__)
 
 category_schema = CategorySchema()
 categories_schema = CategorySchema(many=True)
+categories_basic_schema = CategoryBasicSchema(many=True)
 
 @bp.route('/category', methods=["POST"])
 def add_category():
@@ -51,6 +53,15 @@ def all_categories():
     result = categories_schema.dump(all_categories)
 
     return jsonify(result)
+
+@bp.route('/category_names', methods=['GET'])
+def all_categories_names():
+
+    all_categories = Category.query.all()
+    result = categories_basic_schema.dump(all_categories)
+
+    return jsonify(result)
+
 
 @bp.route('/category/<id>', methods=['GET'])
 def get_category(id):

@@ -37,3 +37,4 @@ def get_user_id_from_token(auth_header):
         return decoded_token.get('users_id')
     except ValueError as e:
         raise ValueError(f"Error al decodificar el token: {str(e)}")
+        

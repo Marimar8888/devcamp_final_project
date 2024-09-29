@@ -5,3 +5,8 @@ class CategorySchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Category
         include_relationships = True
+
+class CategoryBasicSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Category
+        include_relationships = False
